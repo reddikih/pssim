@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diskModel>
+	<model_name>36Z15</model_name>
+	<capacity>18M</capacity>
+	<platters>4</platters>
+	<rpm>15000</rpm>
+	<cache_size>1</cache_size>
+	<transfer_rate>160000000</transfer_rate>
+	<sectors_per_track>393</sectors_per_track>
+	<full_stroke_seek_time>0.0067</full_stroke_seek_time>
+	<head_switch_overhead>0.00084</head_switch_overhead>
+	<command_overhead>0.0004</command_overhead>
+	<active_power>13.5</active_power>
+	<idle_power>10.2</idle_power>
+	<standby_power>2.5</standby_power>
+	<spindown_energy>13.0</spindown_energy>
+	<spinup_energy>135.0</spinup_energy>
+	<spindown_time>1.5</spindown_time>
+	<spinup_time>10.9</spinup_time>
+</diskModel>

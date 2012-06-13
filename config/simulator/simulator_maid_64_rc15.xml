@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simulator>
+	<number_parameter>
+		<number_of_cache_disks>9</number_of_cache_disks>
+		<number_of_cache_memory>1</number_of_cache_memory>
+		<disks_per_cache_memory>64</disks_per_cache_memory>
+		<number_of_clients>2</number_of_clients>
+	</number_parameter>
+
+	<!-- シミュレーション対象システムを選択します．  -->
+	<!-- <layout_manager_factory>sim.datalayout.factory.DefaultLayoutManagerFactory</layout_manager_factory> -->
+	<!-- <layout_manager_factory>sim.datalayout.factory.RAPoSDALayoutManagerFactory</layout_manager_factory> -->
+	<layout_manager_factory>sim.datalayout.factory.MAIDLayoutManagerFactory</layout_manager_factory>
+
+	<threshold>
+		<threshold_of_to_spindown>10.0</threshold_of_to_spindown> <!-- 単位:sec -->
+		<threshold_of_memory_buffer>1000GB</threshold_of_memory_buffer> <!-- 単位は(K|M|G)B  -->
+	</threshold>
+	<device_model>
+		<model_of_cache_disk>_cacheDiskModel.xml</model_of_cache_disk>
+		<model_of_data_disk>_dataDiskModel.xml</model_of_data_disk>
+		<model_of_cache_memory>_memoryModel.xml</model_of_cache_memory>
+	</device_model>
+	<block_size>4096</block_size>
+	<use_cache>true</use_cache>>
+</simulator>

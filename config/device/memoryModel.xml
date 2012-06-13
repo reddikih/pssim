@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<memoryModel>
+	<model_name>unkown</model_name>
+	<capacity>32GB</capacity> <!-- 単位は(K|M|G)B  -->
+	<access_latency>0.0001</access_latency>
+</memoryModel>

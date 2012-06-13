@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diskModel>
+	<model_name>Deskstar 7K200</model_name>
+	<capacity>2TB</capacity>
+	<platters>5</platters>
+	<rpm>7200</rpm>
+	<cache_size>32MB</cache_size>
+	<transfer_rate>134MB</transfer_rate>
+	<sectors_per_track>63</sectors_per_track>
+	<full_stroke_seek_time>0.0087</full_stroke_seek_time>
+	<head_switch_overhead>0.00084</head_switch_overhead>
+	<command_overhead>0.0005</command_overhead>
+	<active_power>11.1</active_power>
+	<idle_power>7.5</idle_power>
+	<standby_power>0.8</standby_power>
+	<spindown_energy>35.0</spindown_energy>
+	<spinup_energy>450.0</spinup_energy>
+	<spindown_time>0.7</spindown_time>
+	<spinup_time>15.0</spinup_time> <!-- drive ready time (from spec)  -->
+</diskModel>

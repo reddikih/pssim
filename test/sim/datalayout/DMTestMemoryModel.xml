@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<memoryModel>
+	<model_name>unkown</model_name>
+	<capacity>12</capacity>
+	<access_latency>0.000005</access_latency>
+	<read_area_ratio>0.5</read_area_ratio>
+	<number_of_replica>2</number_of_replica>
+</memoryModel>
