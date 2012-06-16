@@ -48,8 +48,6 @@ public class DefaultLayoutManager extends LayoutManager {
 // Modified to random select a copy of primary and backup
 		int diskId = this.layoutInfo.getDataDiskId(entry.getId());
 
-		diskId = this.layoutInfo.getDataDiskId(entry.getId());
-
 		Random rand = new Random();
 		if(rand.nextInt(2) == 1) {
 			diskId = this.dataDiskList.get(diskId).getBackupDestinationId();
