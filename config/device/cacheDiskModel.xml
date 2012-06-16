@@ -4,7 +4,7 @@
 	<capacity>2TB</capacity>
 	<platters>5</platters>
 	<rpm>7200</rpm>
-	<cache_size>32</cache_size>
+	<cache_size>32MB</cache_size>
 	<transfer_rate>134MB</transfer_rate>
 	<sectors_per_track>63</sectors_per_track>
 	<full_stroke_seek_time>0.0087</full_stroke_seek_time>
