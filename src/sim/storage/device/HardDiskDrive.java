@@ -12,6 +12,8 @@ import sim.util.DiskState;
 
 public class HardDiskDrive implements CacheSource {
 
+	private static final int BLOCK_SIZE = 512;
+
 	private int id;
 	private DiskModel model;
 	private DiskStateManager stateManager;
@@ -101,15 +103,15 @@ public class HardDiskDrive implements CacheSource {
 		return responseTime;
 	}
 
-	private double calculateServiceTime(int size) {
-		double fsst = model.getFullStrokeSeekTime();
-		double fdrt = 1.0 / ((double)model.getRpm() / 60.0);
-		int sec_per_track = model.getSectorsPerTrack();
-		double overhead = model.getHeadSwitchTime() + model.getCommandOverhead();
-		double trans_rate = (double)size / model.getTransferRate();
+	public double calculateServiceTime(int size) {
+		int block_len = (int)Math.ceil(size / BLOCK_SIZE);
+		double fsst = model.getFullStrokeSeekTime();         // full stroke seek time.
+		double fdrt = 60.0 / model.getRpm();                 // full disk rotation time
+		int sec_per_track = model.getSectorsPerTrack();      // sectors per track
+		double overhead = model.getHeadSwitchTime() + model.getCommandOverhead(); // overhead time
+		double transfer_rate = 1.0 / ((double)model.getTransferRate() / BLOCK_SIZE); // blocks/s
 
-		double serviceTime = (fsst / 2) + (fdrt / 2) + fdrt * (size / sec_per_track) + overhead + trans_rate;
-		return serviceTime;
+		return (fsst/2) + (fdrt/2) + fdrt*(block_len/sec_per_track) + overhead + transfer_rate;
 	}
 
 	private double calculateQueueingTime(double arrivalTime) {
