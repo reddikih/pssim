@@ -70,7 +70,7 @@ public class CacheDisk {
 
 		if (cacheLine.containsKey(dataId)) {
 			CacheDiskEntry entry = cacheLine.get(dataId);
-			if (accessTime >= entry.getCreatedTime()) {
+			if (accessTime > entry.getCreatedTime()) {
 				result = entry.getEntry();
 
 				entry.setLastAccessTime(accessTime);

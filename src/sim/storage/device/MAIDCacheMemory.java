@@ -105,7 +105,7 @@ public class MAIDCacheMemory implements Cache {
 		while (maxCacheSize < (usingSize + entry.getSize())) {
 			Map.Entry<Double, Long> lruEntry = usedKeys.pollFirstEntry();
 			CacheEntry tempEntry = caches.remove(lruEntry.getValue());
-			usingSize =- tempEntry.getEntry().getSize();
+			usingSize -= tempEntry.getEntry().getSize();
 		}
 		addEntry(entry, arrivalTime);
 	}

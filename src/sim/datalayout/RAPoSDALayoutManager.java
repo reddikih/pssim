@@ -363,7 +363,7 @@ public class RAPoSDALayoutManager extends LayoutManager {
 		List<DataEntry> entries = cacheMemory.getCacheLines(type);
 
 		for (DataEntry entry : entries) {
-			result =+ entry.getSize();
+			result += entry.getSize();
 		}
 		return result;
 	}
@@ -554,7 +554,9 @@ public class RAPoSDALayoutManager extends LayoutManager {
 					int cacheMemId = getCacheMemoryId(entry.getId(), ReplicaType.PRIMARY);
 					CacheMemory cacheMem = this.cacheMemoryList.get(cacheMemId);
 					if (cacheMem != null)
-						cacheMem.writeToReadArea(entry, arrivalTime + responseTime);
+						//　read用領域へのコピーはデータディスクへの書き込みとは非同期で行うので
+						// データディスクの書き込み待ちはしない
+						cacheMem.writeToReadArea(entry, arrivalTime);
 
 					// ディスク回転中アクセスのログ出力
 					String logStr = LogCollector.createDiskRotationRatioRecord(entry.getId(), diskId, arrivalTime, type, true);
@@ -579,7 +581,9 @@ public class RAPoSDALayoutManager extends LayoutManager {
 					int cacheMemId = getCacheMemoryId(entry.getId(), ReplicaType.BACKUP);
 					CacheMemory cacheMem = this.cacheMemoryList.get(cacheMemId);
 					if (cacheMem != null)
-						cacheMem.writeToReadArea(entry, arrivalTime + cdResponseTime);
+						//　read用領域へのコピーはデータディスクへの書き込みとは非同期で行うので
+						// データディスクの書き込み待ちはしない
+						cacheMem.writeToReadArea(entry, arrivalTime);
 
 					// ディスク回転中アクセスのログ出力
 					String logStr = LogCollector.createDiskRotationRatioRecord(entry.getId(), diskId, arrivalTime, type, true);

@@ -89,7 +89,7 @@ public class MAIDLayoutManager extends LayoutManager {
 	}
 
 	public Object readFromSource(DataEntry entry, double arrivalTime) {
-		double responseTime = -1.0;
+		double responseTime = 0.0;
 		boolean isHit = false;
 
 		StorageManager sm = Environment.getStorageManager();
@@ -137,7 +137,7 @@ public class MAIDLayoutManager extends LayoutManager {
 
 
 	private double readFromDataDisk(DataEntry entry, double arrivalTime) {
-		double result = -1.0;
+		double result = 0.0;
 		double delay = 0.0;
 
 		int diskId = 0;
@@ -193,7 +193,7 @@ public class MAIDLayoutManager extends LayoutManager {
 	}
 
 	private double writeToCacheDisk(DataEntry entry, double accessTime, boolean dirtyFlag) {
-		double result = -1.0;
+		double result = 0.0;
 		// 対象CacheDiskのdisk IDを決定する
 		decideDestinationCacheDisk(entry);
 
