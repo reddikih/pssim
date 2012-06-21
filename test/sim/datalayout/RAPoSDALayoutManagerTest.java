@@ -147,10 +147,10 @@ public class RAPoSDALayoutManagerTest extends TestCase {
 		 * キャッシュメモリのprimary or backup領域から追い出されたデータでread用領域に書き込まれて
 		 * いるはずのデータのアクセス性能のチェック
 		 */
-		// キャッシュ追い出しと同じ時刻でアクセスした場合，まだread用領域にはコピーされる前のはずなので
-		// 応答時間はディスクアクセスの時間となるはず
+		// キャッシュ追い出し時には追い出しデータをread用領域にコピーしてからデータディスクへ書き込むため，
+		// 応答時間はメモリの速度となるはず
 		result = myLayoutManager.readProcess(d1, 0.41);
-		assertFalse(result < 0.001);
+		assertTrue(result < 0.001);
 		// read用領域にコピーされた時刻よりも遅いアクセスの場合，メモリの速度で応答されるはず
 		result = myLayoutManager.readProcess(d1, 0.51);
 		assertTrue(result < 0.001);

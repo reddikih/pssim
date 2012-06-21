@@ -103,4 +103,9 @@ public class DefaultLayoutManager extends LayoutManager {
 		layoutInfo.showDataAndDiskMappingInfo();
 	}
 
+	@Override
+	public String getStorageType() {
+		return "Normal";
+	}
+
 }

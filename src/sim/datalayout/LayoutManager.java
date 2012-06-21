@@ -36,4 +36,6 @@ public abstract class LayoutManager {
 	public abstract void showConfiguration();
 
 	public abstract void showDataAndDiskMappingInfo();
+
+	public abstract String getStorageType();
 }

@@ -15,6 +15,7 @@ import sim.datalayout.partitioning.IPartitioning;
 import sim.datalayout.partitioning.RoundRobinPartitioning;
 import sim.output.LogCollector;
 import sim.output.LogCollector.OutputType;
+import sim.stat.RAPoSDAStats;
 import sim.storage.StorageManager;
 import sim.util.AccessType;
 import sim.util.ReplicaType;
@@ -140,12 +141,18 @@ public class RAPoSDALayoutManager extends LayoutManager {
 		StorageManager sm = Environment.getStorageManager();
 		boolean isHit = false;
 
+		RAPoSDAStats stats = (RAPoSDAStats)Environment.getStats();
+		stats.incrementReadCounter();
+
 		// Primary Cache Memoryを確認
 		int pCacheMemId = getCacheMemoryId(entry.getId(), ReplicaType.PRIMARY);
 		CacheMemory pCacheMemory = this.cacheMemoryList.get(pCacheMemId);
 		isHit = pCacheMemory.isHit(entry.getId(), ReplicaType.PRIMARY);
 		if (isHit) {
 			result = sm.accessToCacheMemory(pCacheMemId, entry, arrivalTime, AccessType.READ);
+
+			stats.incrementCounter(RAPoSDAStats.COUNTER_TYPE.WRITE_BUFF);
+
 			// Primary Cache Memroy Hitのログ出力
 			String logStr = LogCollector.createCacheMemoryHitRatioRecord(entry.getId(), pCacheMemId, arrivalTime, ReplicaType.PRIMARY, true);
 			LogCollector.outputRecord(logStr, LogCollector.OutputType.CACHE_MEMORY_HIT_RATIO);
@@ -160,6 +167,9 @@ public class RAPoSDALayoutManager extends LayoutManager {
 			isHit = bCacheMemory.isHit(entry.getId(), ReplicaType.BACKUP);
 			if (isHit) {
 				result = sm.accessToCacheMemory(bCacheMemId, entry, arrivalTime, AccessType.READ);
+
+				stats.incrementCounter(RAPoSDAStats.COUNTER_TYPE.WRITE_BUFF);
+
 				// Backup Cache Memroy Hitのログ出力
 				String logStr = LogCollector.createCacheMemoryHitRatioRecord(entry.getId(), bCacheMemId, arrivalTime, ReplicaType.BACKUP, true);
 				LogCollector.outputRecord(logStr, LogCollector.OutputType.CACHE_MEMORY_HIT_RATIO);
@@ -186,6 +196,10 @@ public class RAPoSDALayoutManager extends LayoutManager {
 					LogCollector.outputRecord(logStr, LogCollector.OutputType.CACHE_MEMORY_HIT_RATIO);
 				}
 			}
+
+			if (isHit) {
+				stats.incrementCounter(RAPoSDAStats.COUNTER_TYPE.READ_AREA);
+			}
 		}
 
 		if (!isHit) {
@@ -210,6 +224,8 @@ public class RAPoSDALayoutManager extends LayoutManager {
 					pCacheMemory.writeToReadArea(entry, result);
 					bCacheMemory.writeToReadArea(entry, result);
 
+					stats.incrementCounter(RAPoSDAStats.COUNTER_TYPE.CACHE_DISK);
+
 					// CacheDisk Hitのログ出力
 					String logStr = LogCollector.createCacheDiskHitRatioRecord(entry.getId(), cacheDiskId, arrivalTime, true);
 					LogCollector.outputRecord(logStr, LogCollector.OutputType.CACHE_DISK_HIT_RATIO);
@@ -219,7 +235,7 @@ public class RAPoSDALayoutManager extends LayoutManager {
 
 					// キャッシュ上からは追い出されているので，layoutInfo.cacheDiskMapからは削除しておく
 					// 暫定処理．この処理はやるべきかやらないべきかを後で検討する
-					this.layoutInfo.removeCacheDiskMap(entry.getId());
+//					this.layoutInfo.removeCacheDiskMap(entry.getId());
 				}
 			}
 		}
@@ -652,9 +668,10 @@ public class RAPoSDALayoutManager extends LayoutManager {
 	public void debugCreateManagedDevices() {
 		System.out.println("---createManagedDevices-------");
 		System.out.println("Number of CacheMemory : " + this.numberOfCacheMemory);
-		System.out.println("Number of CacheDisk : " + this.numberOfCacheDisk);
+		System.out.println("Size of CacheMemory   : " + Environment.getMemoryModel().getCapacity());
+		System.out.println("Number of CacheDisk   : " + this.numberOfCacheDisk);
 		System.out.println("Disks per CacheMemory : " + this.diskPerCache);
-		System.out.println("Number of DataDisk : " + this.numberOfDataDisk);
+		System.out.println("Number of DataDisk    : " + this.numberOfDataDisk);
 		System.out.println("------------------------------");
 //		for (int i = 0; i < this.numberOfCacheMemory; i++) {
 //			System.out.println("CacheMemory[" + i + "], id = " + this.cacheMemoryList.get(i).getId()
@@ -692,5 +709,10 @@ public class RAPoSDALayoutManager extends LayoutManager {
 
 	public void showDataAndDiskMappingInfo() {
 		layoutInfo.showDataAndDiskMappingInfo();
+	}
+
+	@Override
+	public String getStorageType() {
+		return 	"RAPoSDA";
 	}
 }

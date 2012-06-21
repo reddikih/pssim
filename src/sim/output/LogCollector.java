@@ -32,6 +32,7 @@ public class LogCollector {
 		BUFFER_WRITABLE_RATIO,
 		DISK_ROTATION_RATIO,
 		DATA_DISK_MAP,
+		STATS,
 	};
 
 	/**

@@ -13,6 +13,8 @@ import sim.datalayout.managed.DataEntry;
 import sim.datalayout.partitioning.IPartitioning;
 import sim.datalayout.partitioning.RoundRobinPartitioning;
 import sim.output.LogCollector;
+import sim.stat.MAIDStats;
+import sim.stat.RAPoSDAStats;
 import sim.storage.StorageManager;
 import sim.storage.device.MAIDCacheMemory;
 import sim.util.AccessType;
@@ -81,6 +83,9 @@ public class MAIDLayoutManager extends LayoutManager {
 	public double readProcess(DataEntry entry, double arrivalTime) {
 		double result = -1.0;
 
+		MAIDStats stats = (MAIDStats)Environment.getStats();
+		stats.incrementReadCounter();
+
 		// Check the cache memory at first
 		DataEntry value = (DataEntry)cache.read(entry, arrivalTime);
 		result = value.getResponseTime();
@@ -94,6 +99,8 @@ public class MAIDLayoutManager extends LayoutManager {
 
 		StorageManager sm = Environment.getStorageManager();
 
+		MAIDStats stats = (MAIDStats)Environment.getStats();
+
 		// 最初にキャッシュディスクから読み出しを試みる
 		// 実際にキャッシュデータがキャッシュディスクに存在するか確認
 
@@ -105,6 +112,9 @@ public class MAIDLayoutManager extends LayoutManager {
 			if (cacheEntry != null) {
 				responseTime = sm.accessToCacheDisk(cacheDiskId, cacheEntry, arrivalTime, AccessType.READ);
 				isHit = true;
+
+				stats.incrementCounter(MAIDStats.COUNTER_TYPE.CACHE_DISK);
+
 				// CacheDisk Hitのログ出力
 				String logStr = LogCollector.createCacheDiskHitRatioRecord(entry.getId(), cacheDiskId, arrivalTime, true);
 				LogCollector.outputRecord(logStr, LogCollector.OutputType.CACHE_DISK_HIT_RATIO);
@@ -114,7 +124,7 @@ public class MAIDLayoutManager extends LayoutManager {
 
 				// キャッシュ上からは追い出されているので，layoutInfo.cacheDiskMapからは削除しておく
 				// 暫定処理．この処理はやるべきかやらないべきかを後で検討する
-				// this.layoutInfo.removeCacheDiskMap(entry.getId());
+//				 this.layoutInfo.removeCacheDiskMap(entry.getId());
 			}
 		}
 
@@ -281,8 +291,9 @@ public class MAIDLayoutManager extends LayoutManager {
 	public void showConfiguration() {
 		System.out.println("<< This is MAID Configuration >>");
 		System.out.println("---createManagedDevices-------");
+		System.out.println("Size of CacheMemory : " + Environment.getMemoryModel().getCapacity());
 		System.out.println("Number of CacheDisk : " + this.numberOfCacheDisk);
-		System.out.println("Number of DataDisk : " + this.numberOfDataDisk);
+		System.out.println("Number of DataDisk  : " + this.numberOfDataDisk);
 		System.out.println("------------------------------");
 	}
 
@@ -339,6 +350,11 @@ public class MAIDLayoutManager extends LayoutManager {
 
 		result = pResponse >= bResponse ? pResponse : bResponse;
 		return result;
+	}
+
+	@Override
+	public String getStorageType() {
+		return "MAID";
 	}
 
 }

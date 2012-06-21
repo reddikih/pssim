@@ -10,6 +10,7 @@ import sim.datalayout.MAIDLayoutManager;
 import sim.datalayout.managed.DataEntry;
 import sim.output.LogCollector;
 import sim.output.LogCollector.OutputType;
+import sim.stat.MAIDStats;
 import sim.storage.cache.Cache;
 import sim.storage.cache.CacheEntry;
 import sim.util.ReplicaType;
@@ -75,6 +76,10 @@ public class MAIDCacheMemory implements Cache {
 			LogCollector.outputRecord(logStr, OutputType.CACHE_MEMORY_HIT_RATIO);
 		} else {
 			((DataEntry)value).setResponseTime(cacheResposneTime);
+
+			MAIDStats stats = (MAIDStats)Environment.getStats();
+			stats.incrementCounter(MAIDStats.COUNTER_TYPE.CACHE_MEMORY);
+
 			// Cache memory hit log.
 			String logStr = LogCollector.createCacheMemoryHitRatioRecord(data.getId(), 0, arrivalTime, ReplicaType.PRIMARY, true);
 			LogCollector.outputRecord(logStr, OutputType.CACHE_MEMORY_HIT_RATIO);

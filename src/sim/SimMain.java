@@ -7,6 +7,9 @@ import sim.datalayout.LayoutManager;
 import sim.datalayout.factory.LayoutManagerFactory;
 import sim.output.LogCollector;
 import sim.request.RequestManager;
+import sim.stat.IStatistics;
+import sim.stat.MAIDStats;
+import sim.stat.RAPoSDAStats;
 import sim.storage.StorageManager;
 import sim.storage.device.model.DiskModel;
 import sim.storage.device.model.MemoryModel;
@@ -92,6 +95,17 @@ public class SimMain {
 		SimTimeManager simTimeManager = new SimTimeManager();
 		Environment.setSimTimeManager(simTimeManager);
 
+		// Creation Statistics Collector
+		IStatistics stats = null;
+		if (layoutManager.getStorageType() == "MAID") {
+			stats = new MAIDStats();
+		} else if (layoutManager.getStorageType() == "RAPoSDA") {
+			stats = new RAPoSDAStats();
+		}
+		if (stats != null) {
+			Environment.setStats(stats);
+		}
+
 		// Disk Cache setting
 		boolean useCache = false;
 		if (this.useCache.equalsIgnoreCase("on")) useCache = true;
@@ -114,6 +128,11 @@ public class SimMain {
 		StorageManager sm = Environment.getStorageManager();
 		double latestAccessTime = Environment.getSimTimeManager().getLatestAccessTime();
 		sm.postProcess(latestAccessTime + 1);
+
+		IStatistics stats = Environment.getStats();
+		if (stats != null) {
+			stats.outputStats();
+		}
 
 		// for debug
 		// show the map information between dataid and data disk id
@@ -163,7 +182,7 @@ public class SimMain {
 		this.useCache = args[6];
 		this.outputDes = args[7];
 
-        showArguments();
+//        showArguments();
 	}
 
     private void showArguments() {
