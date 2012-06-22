@@ -16,6 +16,10 @@ import sim.datalayout.partitioning.RoundRobinPartitioning;
 import sim.output.LogCollector;
 import sim.output.LogCollector.OutputType;
 import sim.stat.RAPoSDAStats;
+import sim.stat.Statistics;
+import sim.stat.Statistics.READ_COUNTER_TYPE;
+import sim.stat.Statistics.RESPONSE_TYPE;
+import sim.stat.Statistics.WRITE_COUNTER_TYPE;
 import sim.storage.StorageManager;
 import sim.util.AccessType;
 import sim.util.ReplicaType;
@@ -141,8 +145,7 @@ public class RAPoSDALayoutManager extends LayoutManager {
 		StorageManager sm = Environment.getStorageManager();
 		boolean isHit = false;
 
-		RAPoSDAStats stats = (RAPoSDAStats)Environment.getStats();
-		stats.incrementReadCounter();
+		Statistics stats = Environment.getStats();
 
 		// Primary Cache Memoryを確認
 		int pCacheMemId = getCacheMemoryId(entry.getId(), ReplicaType.PRIMARY);
@@ -151,7 +154,8 @@ public class RAPoSDALayoutManager extends LayoutManager {
 		if (isHit) {
 			result = sm.accessToCacheMemory(pCacheMemId, entry, arrivalTime, AccessType.READ);
 
-			stats.incrementCounter(RAPoSDAStats.COUNTER_TYPE.WRITE_BUFF);
+			stats.incrementReadCounter(RAPoSDAStats.READ_COUNTER_TYPE.WRITE_BUFF);
+			stats.addingResponseTime(Statistics.RESPONSE_TYPE.MEMORY, result);
 
 			// Primary Cache Memroy Hitのログ出力
 			String logStr = LogCollector.createCacheMemoryHitRatioRecord(entry.getId(), pCacheMemId, arrivalTime, ReplicaType.PRIMARY, true);
@@ -168,7 +172,8 @@ public class RAPoSDALayoutManager extends LayoutManager {
 			if (isHit) {
 				result = sm.accessToCacheMemory(bCacheMemId, entry, arrivalTime, AccessType.READ);
 
-				stats.incrementCounter(RAPoSDAStats.COUNTER_TYPE.WRITE_BUFF);
+				stats.incrementReadCounter(RAPoSDAStats.READ_COUNTER_TYPE.WRITE_BUFF);
+				stats.addingResponseTime(Statistics.RESPONSE_TYPE.MEMORY, result);
 
 				// Backup Cache Memroy Hitのログ出力
 				String logStr = LogCollector.createCacheMemoryHitRatioRecord(entry.getId(), bCacheMemId, arrivalTime, ReplicaType.BACKUP, true);
@@ -198,7 +203,8 @@ public class RAPoSDALayoutManager extends LayoutManager {
 			}
 
 			if (isHit) {
-				stats.incrementCounter(RAPoSDAStats.COUNTER_TYPE.READ_AREA);
+				stats.incrementReadCounter(RAPoSDAStats.READ_COUNTER_TYPE.READ_AREA);
+				stats.addingResponseTime(Statistics.RESPONSE_TYPE.MEMORY, result);
 			}
 		}
 
@@ -224,7 +230,8 @@ public class RAPoSDALayoutManager extends LayoutManager {
 					pCacheMemory.writeToReadArea(entry, result);
 					bCacheMemory.writeToReadArea(entry, result);
 
-					stats.incrementCounter(RAPoSDAStats.COUNTER_TYPE.CACHE_DISK);
+					stats.incrementReadCounter(RAPoSDAStats.READ_COUNTER_TYPE.CACHE_DISK);
+					stats.addingResponseTime(Statistics.RESPONSE_TYPE.CACHE_DISK, result);
 
 					// CacheDisk Hitのログ出力
 					String logStr = LogCollector.createCacheDiskHitRatioRecord(entry.getId(), cacheDiskId, arrivalTime, true);
@@ -255,7 +262,7 @@ public class RAPoSDALayoutManager extends LayoutManager {
 	}
 
 	private double readFromDataDisk(DataEntry entry, double arrivalTime) {
-		double result = -1.0;
+		double result = 0.0;
 
 		// 場合分け処理
 		// a) 片方回転中：回転している方のディスクから読む
@@ -356,6 +363,10 @@ public class RAPoSDALayoutManager extends LayoutManager {
 		cacheMem = this.cacheMemoryList.get(bCacheMemoryId);
 		cacheMem.writeToReadArea(entry, arrivalTime + result);
 
+		Statistics stats = Environment.getStats();
+		stats.incrementReadCounter(READ_COUNTER_TYPE.DATA_DISK);
+		stats.addingResponseTime(RESPONSE_TYPE.DATA_DISK, result);
+
 		return result;
 	}
 
@@ -421,6 +432,10 @@ public class RAPoSDALayoutManager extends LayoutManager {
 				StorageManager sm = Environment.getStorageManager();
 				responseTime = sm.accessToCacheMemory(cacheMemoryId, entry, arrivalTime, AccessType.WRITE);
 				shouldDiskAccess = false;
+
+				Statistics stats = Environment.getStats();
+				stats.incrementWriteCounter(WRITE_COUNTER_TYPE.CACHE_MEMORY);
+				stats.addingResponseTime(RESPONSE_TYPE.MEMORY, responseTime);
 
 				// バッファ書き込み可能率のログ出力(hit)
 				String logStr = LogCollector.createBufferWritableRatioRecord(entry.getId(), cacheMemoryId, arrivalTime, type, true);
@@ -564,6 +579,11 @@ public class RAPoSDALayoutManager extends LayoutManager {
 				int diskId = layoutInfo.getDataDiskId(entry.getId());
 				if (sm.isSpinning(diskId, arrivalTime)) {
 					responseTime = sm.accessToDataDisk(diskId, entry, arrivalTime, AccessType.WRITE);
+
+					Statistics stats = Environment.getStats();
+					stats.incrementWriteCounter(WRITE_COUNTER_TYPE.DATA_DISK);
+					stats.addingResponseTime(RESPONSE_TYPE.DATA_DISK, responseTime);
+
 					writeToCacheDisk(entry, arrivalTime + responseTime);
 
 					// キャッシュメモリのread用領域にもコピーする
@@ -591,7 +611,12 @@ public class RAPoSDALayoutManager extends LayoutManager {
 				int diskId = dDisk.getBackupDestinationId();
 				if (sm.isSpinning(diskId, arrivalTime)) {
 					responseTime = sm.accessToDataDisk(diskId, entry, arrivalTime, AccessType.WRITE);
-					double cdResponseTime = writeToCacheDisk(entry, arrivalTime + responseTime);
+
+					Statistics stats = Environment.getStats();
+					stats.incrementWriteCounter(WRITE_COUNTER_TYPE.DATA_DISK);
+					stats.addingResponseTime(RESPONSE_TYPE.DATA_DISK, responseTime);
+
+					writeToCacheDisk(entry, arrivalTime + responseTime);
 
 					// キャッシュメモリのread用領域にもコピーする
 					int cacheMemId = getCacheMemoryId(entry.getId(), ReplicaType.BACKUP);
@@ -629,6 +654,11 @@ public class RAPoSDALayoutManager extends LayoutManager {
 		// CacheDiskへの書き込み処理の応答時間を返す
 		StorageManager sm = Environment.getStorageManager();
 		responseTime = sm.accessToCacheDisk(cacheDiskId, entry, accessTime, AccessType.WRITE);
+
+		Statistics stats = Environment.getStats();
+		stats.incrementWriteCounter(WRITE_COUNTER_TYPE.CACHE_DISK);
+		stats.addingResponseTime(RESPONSE_TYPE.CACHE_DISK, responseTime);
+
 		return responseTime;
 	}
 

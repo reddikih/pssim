@@ -2,39 +2,19 @@ package sim.stat;
 
 import sim.output.LogCollector;
 
-public class MAIDStats implements IStatistics {
+public class MAIDStats extends Statistics {
 
-	private long memoryReadCount;
-	private long cacheDiskReadCount;
-	private long totalReadCount;
-
-
-	public double calcMemoryCacheHit() {
-		return (double)memoryReadCount / totalReadCount;
-	}
-
-	public double calcCacheDiskHit() {
-		return (double)cacheDiskReadCount / totalReadCount;
-	}
-
-	public void incrementCounter(COUNTER_TYPE type) {
-		if (type.equals(COUNTER_TYPE.CACHE_MEMORY)) {
-			memoryReadCount++;
-		} else if (type.equals(COUNTER_TYPE.CACHE_DISK)) {
-			cacheDiskReadCount++;
-		}
-	}
-
-	public void incrementReadCounter() {
-		totalReadCount++;
-	}
-
+	@Override
 	public void outputStats() {
 		LogCollector.outputRecord("MAID statistics", LogCollector.OutputType.STATS);
-		LogCollector.outputRecord("Total read accesses = " + totalReadCount, LogCollector.OutputType.STATS);
-		LogCollector.outputRecord("CacheMemory read accesses = " + memoryReadCount, LogCollector.OutputType.STATS);
-		LogCollector.outputRecord("CacheMemory read hit ratio = " + calcMemoryCacheHit(), LogCollector.OutputType.STATS);
-		LogCollector.outputRecord("CacheDisk read accesses = " + cacheDiskReadCount, LogCollector.OutputType.STATS);
-		LogCollector.outputRecord("CacheDIsk read hit ratio = " + calcCacheDiskHit(), LogCollector.OutputType.STATS);
+		LogCollector.outputRecord("	Total read accesses          = " + totalReadCount, LogCollector.OutputType.STATS);
+		LogCollector.outputRecord("	CacheMemory read accesses    = " + memoryReadCount, LogCollector.OutputType.STATS);
+		LogCollector.outputRecord("	CacheMemory read hit ratio   = " + calcMemoryCacheHit(), LogCollector.OutputType.STATS);
+		LogCollector.outputRecord("	CacheDisk read accesses      = " + cacheDiskReadCount, LogCollector.OutputType.STATS);
+		LogCollector.outputRecord("	CacheDIsk read hit ratio     = " + calcCacheDiskHit(), LogCollector.OutputType.STATS);
+		LogCollector.outputRecord("	DataDisk read accesses       = " + dataDiskReadCount, LogCollector.OutputType.STATS);
+		LogCollector.outputRecord("	Avg memory respnose time     = " + calcAverageMemoryResponseTime(), LogCollector.OutputType.STATS);
+		LogCollector.outputRecord("	Avg cache disk respnose time = " + calcAverageCacheDiskResponseTime(), LogCollector.OutputType.STATS);
+		LogCollector.outputRecord("	Avg data disk respnose time  = " + calcAverageDataDiskResponseTime(), LogCollector.OutputType.STATS);
 	}
 }

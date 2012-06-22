@@ -7,7 +7,7 @@ import sim.datalayout.LayoutManager;
 import sim.datalayout.factory.LayoutManagerFactory;
 import sim.output.LogCollector;
 import sim.request.RequestManager;
-import sim.stat.IStatistics;
+import sim.stat.Statistics;
 import sim.stat.MAIDStats;
 import sim.stat.RAPoSDAStats;
 import sim.storage.StorageManager;
@@ -96,7 +96,7 @@ public class SimMain {
 		Environment.setSimTimeManager(simTimeManager);
 
 		// Creation Statistics Collector
-		IStatistics stats = null;
+		Statistics stats = null;
 		if (layoutManager.getStorageType() == "MAID") {
 			stats = new MAIDStats();
 		} else if (layoutManager.getStorageType() == "RAPoSDA") {
@@ -129,7 +129,7 @@ public class SimMain {
 		double latestAccessTime = Environment.getSimTimeManager().getLatestAccessTime();
 		sm.postProcess(latestAccessTime + 1);
 
-		IStatistics stats = Environment.getStats();
+		Statistics stats = Environment.getStats();
 		if (stats != null) {
 			stats.outputStats();
 		}

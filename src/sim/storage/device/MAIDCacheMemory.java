@@ -11,6 +11,7 @@ import sim.datalayout.managed.DataEntry;
 import sim.output.LogCollector;
 import sim.output.LogCollector.OutputType;
 import sim.stat.MAIDStats;
+import sim.stat.Statistics;
 import sim.storage.cache.Cache;
 import sim.storage.cache.CacheEntry;
 import sim.util.ReplicaType;
@@ -78,7 +79,8 @@ public class MAIDCacheMemory implements Cache {
 			((DataEntry)value).setResponseTime(cacheResposneTime);
 
 			MAIDStats stats = (MAIDStats)Environment.getStats();
-			stats.incrementCounter(MAIDStats.COUNTER_TYPE.CACHE_MEMORY);
+			stats.incrementReadCounter(MAIDStats.READ_COUNTER_TYPE.CACHE_MEMORY);
+			stats.addingResponseTime(Statistics.RESPONSE_TYPE.MEMORY, ((DataEntry)value).getResponseTime());
 
 			// Cache memory hit log.
 			String logStr = LogCollector.createCacheMemoryHitRatioRecord(data.getId(), 0, arrivalTime, ReplicaType.PRIMARY, true);
@@ -92,16 +94,25 @@ public class MAIDCacheMemory implements Cache {
 	public Object write(DataEntry entry, double arrivalTime) {
 		Object value = null;
 
-		if ((value = getEntry(entry.getId(), arrivalTime)) != null) {
-			((DataEntry)value).setResponseTime(cacheResposneTime);
+		// MAID のキャッシュポリシーは Write through だからメモリの速度で応答することは無いし
+		// 常にディスクまで書き込むようにする．
+		value = source.writeToSource(entry, arrivalTime);
+		if ((usingSize + entry.getSize()) <= maxCacheSize) {
+			addEntry(entry, arrivalTime);
 		} else {
-			value = source.writeToSource(entry, arrivalTime);
-			if ((usingSize + entry.getSize()) <= maxCacheSize) {
-				addEntry(entry, arrivalTime);
-			} else {
-				replaceEntry(entry, arrivalTime);
-			}
+			// Write through なので追い出されたデータは無視しても問題無い
+			replaceEntry(entry, arrivalTime);
 		}
+//		if ((value = getEntry(entry.getId(), arrivalTime)) != null) {
+//			((DataEntry)value).setResponseTime(cacheResposneTime);
+//		} else {
+//			value = source.writeToSource(entry, arrivalTime);
+//			if ((usingSize + entry.getSize()) <= maxCacheSize) {
+//				addEntry(entry, arrivalTime);
+//			} else {
+//				replaceEntry(entry, arrivalTime);
+//			}
+//		}
 
 		return value;
 	}
@@ -109,6 +120,7 @@ public class MAIDCacheMemory implements Cache {
 	private void replaceEntry(DataEntry entry, double arrivalTime) {
 		while (maxCacheSize < (usingSize + entry.getSize())) {
 			Map.Entry<Double, Long> lruEntry = usedKeys.pollFirstEntry();
+			if (lruEntry == null) return;
 			CacheEntry tempEntry = caches.remove(lruEntry.getValue());
 			usingSize -= tempEntry.getEntry().getSize();
 		}

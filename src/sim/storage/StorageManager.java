@@ -12,6 +12,8 @@ import sim.datalayout.MAIDLayoutManager;
 import sim.datalayout.RAPoSDALayoutManager;
 import sim.datalayout.managed.DataEntry;
 import sim.output.LogCollector;
+import sim.stat.MAIDStats;
+import sim.stat.Statistics;
 import sim.storage.device.HardDiskDrive;
 import sim.storage.device.Memory;
 import sim.storage.device.state.DefaultDiskStateManager;
@@ -127,6 +129,8 @@ public class StorageManager {
 		int size = request.getDataSize();
 		int blockSize = SimParameter.getBlockSize();
 
+		Statistics stats = Environment.getStats();
+
 		for (int i=0; i<dataIds.length; i++) {
 			double tempResponseTime = 0.0;
 
@@ -150,13 +154,17 @@ public class StorageManager {
 			double arrivalTime = request.getArrivalTime();
 
 			if (type.equals(AccessType.READ)) {
-				if (dataType.equals(DataType.NORMAL))
+				if (dataType.equals(DataType.NORMAL)) {
 					tempResponseTime = layoutManager.readProcess(data, arrivalTime);
+					stats.incrementRead();
+				}
 			} else if (type.equals(AccessType.WRITE)) {
 				layoutManager.decideDestinationDisk(data);
 				// 初期データであればrequestデータとデータディスクの対応付けのみを行い，実際の書き込み処理は行わない
-				if (dataType.equals(DataType.NORMAL))
+				if (dataType.equals(DataType.NORMAL)) {
 					tempResponseTime = layoutManager.writeProcess(data, arrivalTime);
+					stats.incrementWrite();
+				}
 			}
 
 			responseTime = tempResponseTime > responseTime ? tempResponseTime : responseTime;
@@ -238,15 +246,15 @@ public class StorageManager {
 			delay = cacheDisk.stateUpdate(arrivalTime, LogCollector.OutputType.CACHE_DISK, type);
 
 		if (type.equals(AccessType.READ)) {
-			responseTime = cacheDisk.read(data, arrivalTime + delay);
+			responseTime = cacheDisk.read(data, arrivalTime + delay) + delay;
 		} else if (type.equals(AccessType.WRITE)) {
-			responseTime = cacheDisk.write(data, arrivalTime + delay);
+			responseTime = cacheDisk.write(data, arrivalTime + delay) + delay;
 		}
 
 		// SimTimeManagerの時間を更新する
-		Environment.getSimTimeManager().setCacheDiskLastAccessTime(responseTime + arrivalTime + delay);
+		Environment.getSimTimeManager().setCacheDiskLastAccessTime(responseTime + arrivalTime);
 
-		return responseTime + delay;
+		return responseTime;
 	}
 
 	/**

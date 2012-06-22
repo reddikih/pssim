@@ -2,7 +2,7 @@ package sim;
 
 import sim.datalayout.LayoutManager;
 import sim.request.RequestManager;
-import sim.stat.IStatistics;
+import sim.stat.Statistics;
 import sim.storage.StorageManager;
 import sim.storage.device.model.DiskModel;
 import sim.storage.device.model.MemoryModel;
@@ -17,7 +17,7 @@ public class Environment {
 	private static StorageManager storageManager;
 	private static SimTimeManager simTimeManager;
 	private static RequestManager requestManager;
-	private static IStatistics stats;
+	private static Statistics stats;
 
 	public static MemoryModel getMemoryModel() {
 		return mmodel;
@@ -83,11 +83,11 @@ public class Environment {
 		Environment.requestManager = requestManager;
 	}
 
-	public static IStatistics getStats() {
+	public static Statistics getStats() {
 		return stats;
 	}
 
-	public static void setStats(IStatistics stats) {
+	public static void setStats(Statistics stats) {
 		Environment.stats = stats;
 	}
 

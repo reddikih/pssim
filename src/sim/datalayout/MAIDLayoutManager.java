@@ -13,6 +13,7 @@ import sim.datalayout.managed.DataEntry;
 import sim.datalayout.partitioning.IPartitioning;
 import sim.datalayout.partitioning.RoundRobinPartitioning;
 import sim.output.LogCollector;
+import sim.stat.Statistics;
 import sim.stat.MAIDStats;
 import sim.stat.RAPoSDAStats;
 import sim.storage.StorageManager;
@@ -83,9 +84,6 @@ public class MAIDLayoutManager extends LayoutManager {
 	public double readProcess(DataEntry entry, double arrivalTime) {
 		double result = -1.0;
 
-		MAIDStats stats = (MAIDStats)Environment.getStats();
-		stats.incrementReadCounter();
-
 		// Check the cache memory at first
 		DataEntry value = (DataEntry)cache.read(entry, arrivalTime);
 		result = value.getResponseTime();
@@ -113,7 +111,8 @@ public class MAIDLayoutManager extends LayoutManager {
 				responseTime = sm.accessToCacheDisk(cacheDiskId, cacheEntry, arrivalTime, AccessType.READ);
 				isHit = true;
 
-				stats.incrementCounter(MAIDStats.COUNTER_TYPE.CACHE_DISK);
+				stats.incrementReadCounter(Statistics.READ_COUNTER_TYPE.CACHE_DISK);
+				stats.addingResponseTime(Statistics.RESPONSE_TYPE.CACHE_DISK, responseTime);
 
 				// CacheDisk Hitのログ出力
 				String logStr = LogCollector.createCacheDiskHitRatioRecord(entry.getId(), cacheDiskId, arrivalTime, true);
@@ -147,7 +146,7 @@ public class MAIDLayoutManager extends LayoutManager {
 
 
 	private double readFromDataDisk(DataEntry entry, double arrivalTime) {
-		double result = 0.0;
+		double responseTime = 0.0;
 		double delay = 0.0;
 
 		int diskId = 0;
@@ -166,9 +165,7 @@ public class MAIDLayoutManager extends LayoutManager {
 
 		StorageManager sm = Environment.getStorageManager();
 
-
 		boolean isSpinning = true;
-
 		if(!sm.isSpinning(diskId, arrivalTime)) {
 			delay = sm.spinUp(diskId, arrivalTime);
 			isSpinning = false;
@@ -178,32 +175,38 @@ public class MAIDLayoutManager extends LayoutManager {
 		String logStr = LogCollector.createDiskRotationRatioRecord(entry.getId(), diskId, arrivalTime, ReplicaType.PRIMARY, isSpinning);
 		LogCollector.outputRecord(logStr, LogCollector.OutputType.DISK_ROTATION_RATIO);
 
-		result = sm.accessToDataDisk(diskId, entry, arrivalTime + delay, entry.getAccessType());
+		responseTime = sm.accessToDataDisk(diskId, entry, arrivalTime + delay, entry.getAccessType()) + delay;
 
+		MAIDStats stats = (MAIDStats)Environment.getStats();
+		stats.incrementReadCounter(Statistics.READ_COUNTER_TYPE.DATA_DISK);
+		stats.addingResponseTime(Statistics.RESPONSE_TYPE.DATA_DISK, responseTime);
+
+//		MAIDのキャッシュポリシーは Write through なのでキャッシュディスクのデータがダーティデータになることはありえない．
+//		なので，ここの処理は不要．
+//		さらに，RAPoSDAに関してもキャッシュディスクはデータディスクのただのコピーなのでダーティデータは存在しない
+//		したがってRAPoSDAにおいてもここの処理は不要．
 		// ディスクは回転中なので，キャッシュディスク中のダーティーデータをデータディスクへ書き込む
-		List<DataEntry> dirtyList = getDirtyDataList(diskId, arrivalTime + delay);
-		for (DataEntry dirtyData : dirtyList) {
-			delay = sm.accessToDataDisk(diskId, dirtyData, arrivalTime + delay, dirtyData.getAccessType());
+//		List<DataEntry> dirtyList = getDirtyDataList(diskId, arrivalTime + delay);
+//		for (DataEntry dirtyData : dirtyList) {
+//			delay = sm.accessToDataDisk(diskId, dirtyData, arrivalTime + delay, dirtyData.getAccessType());
+//
+//			// ダーティーデータのダーティーフラグをfalseに変更
+//			int cacheDiskId = this.layoutInfo.getCacheDiskId(dirtyData.getId());
+//
+//			try {
+//				CacheDisk cacheDisk = this.cacheDiskList.get(cacheDiskId);
+//				cacheDisk.updateDirtyFlag(dirtyData.getId(), false);
+//
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//		}
 
-			// ダーティーデータのダーティーフラグをfalseに変更
-			int cacheDiskId = this.layoutInfo.getCacheDiskId(dirtyData.getId());
-
-			try {
-				CacheDisk cacheDisk = this.cacheDiskList.get(cacheDiskId);
-				cacheDisk.updateDirtyFlag(dirtyData.getId(), false);
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-//			CacheDisk cacheDisk = this.cacheDiskList.get(cacheDiskId);
-//			cacheDisk.updateDirtyFlag(dirtyData.getId(), false);
-		}
-
-		return result;
+		return responseTime;
 	}
 
 	private double writeToCacheDisk(DataEntry entry, double accessTime, boolean dirtyFlag) {
-		double result = 0.0;
+		double responseTime = 0.0;
 		// 対象CacheDiskのdisk IDを決定する
 		decideDestinationCacheDisk(entry);
 
@@ -214,55 +217,61 @@ public class MAIDLayoutManager extends LayoutManager {
 
 		// CacheDiskへの書き込み処理の応答時間を返す
 		StorageManager sm = Environment.getStorageManager();
-		result = sm.accessToCacheDisk(cacheDiskId, entry, accessTime, AccessType.WRITE);
+		responseTime = sm.accessToCacheDisk(cacheDiskId, entry, accessTime, AccessType.WRITE);
 
+		MAIDStats stats = (MAIDStats)Environment.getStats();
+		stats.incrementWriteCounter(Statistics.WRITE_COUNTER_TYPE.CACHE_DISK);
+		stats.addingResponseTime(Statistics.RESPONSE_TYPE.CACHE_DISK, responseTime);
 
+//		MAIDのキャッシュポリシーは Write through なのでキャッシュディスクのデータがダーティデータになることはありえない．
+//		なので，ここの処理は不要．
+//		さらに，RAPoSDAに関してもキャッシュディスクはデータディスクのただのコピーなのでダーティデータは存在しない
+//		したがってRAPoSDAにおいてもここの処理は不要．
 		// Writeして追い出されたダーティデータをデータディスクへ書き込む
 		// この処理は非同期でされると想定するので，resultの結果以上に応答時間の遅延は発生しない．
-		List<DataEntry> dirtyList = cacheDisk.getDirtyDataFromRemovedList(result);
-		if (dirtyList.size() > 0) {
+//		List<DataEntry> dirtyList = cacheDisk.getDirtyDataFromRemovedList(result);
+//		if (dirtyList.size() > 0) {
+//
+//			// 個々の書き込みは別に発行されるので逐次処理的な遅延は考えないことにする
+//			double spinDelay = 0.0;
+//			double diskAccessTime = result;
+//
+//			for (DataEntry dirtyEntry : dirtyList) {
+//				int primaryDiskId = this.layoutInfo.getDataDiskId(dirtyEntry.getId());
+//
+//				// バックアップディスクにも書き込む
+//				int backupDiskId = this.dataDiskList.get(primaryDiskId).getBackupDestinationId();
+//
+//				// 個々の書き込みは別に発行されるので逐次処理的な遅延は考えないことにする
+////				diskAccessTime += delay;
+//
+//				int[] diskIds = {primaryDiskId, backupDiskId};
+//
+//				for (int i = 0; i < diskIds.length; i++) {
+//					boolean isSpinning = true;
+//					if (!sm.isSpinning(diskIds[i], diskAccessTime)) {
+//						spinDelay = sm.spinUp(diskIds[i], diskAccessTime);
+//						isSpinning = false;
+//					}
+//
+//					// ディスクアクセス時の回転確率ログ出力
+//					if (i == 0) {
+//						String logStr = LogCollector.createDiskRotationRatioRecord(entry.getId(), diskIds[i], diskAccessTime, ReplicaType.PRIMARY, isSpinning);
+//						LogCollector.outputRecord(logStr, LogCollector.OutputType.DISK_ROTATION_RATIO);
+//					} else {
+//						String logStr = LogCollector.createDiskRotationRatioRecord(entry.getId(), diskIds[i], diskAccessTime, ReplicaType.BACKUP, isSpinning);
+//						LogCollector.outputRecord(logStr, LogCollector.OutputType.DISK_ROTATION_RATIO);
+//					}
+//
+//					// 個々の書き込みは別に発行されるので逐次処理的な遅延は考えないことにする
+////					delay = sm.accessToDataDisk(diskId, dirtyEntry, diskAccessTime + spinDelay, dirtyEntry.getAccessType());
+//					sm.accessToDataDisk(diskIds[i], dirtyEntry, diskAccessTime + spinDelay, dirtyEntry.getAccessType());
+//				}
+//			}
+//			cacheDisk.clearRemovedList();
+//		}
 
-			// 個々の書き込みは別に発行されるので逐次処理的な遅延は考えないことにする
-//			double delay = 0.0;
-			double spinDelay = 0.0;
-			double diskAccessTime = result;
-
-			for (DataEntry dirtyEntry : dirtyList) {
-				int diskId = this.layoutInfo.getDataDiskId(dirtyEntry.getId());
-
-				// バックアップディスクにも書き込む
-				int backupDiskId = this.dataDiskList.get(diskId).getBackupDestinationId();
-
-				// 個々の書き込みは別に発行されるので逐次処理的な遅延は考えないことにする
-//				diskAccessTime += delay;
-
-				int[] diskIds = {diskId, backupDiskId};
-
-				for (int i = 0; i < 2; i++) {
-					boolean isSpinning = true;
-					if (!sm.isSpinning(diskIds[i], diskAccessTime)) {
-						spinDelay = sm.spinUp(diskIds[i], diskAccessTime);
-						isSpinning = false;
-					}
-
-					// ディスクアクセス時の回転確率ログ出力
-					if (i == 0) {
-						String logStr = LogCollector.createDiskRotationRatioRecord(entry.getId(), diskIds[i], diskAccessTime, ReplicaType.PRIMARY, isSpinning);
-						LogCollector.outputRecord(logStr, LogCollector.OutputType.DISK_ROTATION_RATIO);
-					} else {
-						String logStr = LogCollector.createDiskRotationRatioRecord(entry.getId(), diskIds[i], diskAccessTime, ReplicaType.BACKUP, isSpinning);
-						LogCollector.outputRecord(logStr, LogCollector.OutputType.DISK_ROTATION_RATIO);
-					}
-
-					// 個々の書き込みは別に発行されるので逐次処理的な遅延は考えないことにする
-//					delay = sm.accessToDataDisk(diskId, dirtyEntry, diskAccessTime + spinDelay, dirtyEntry.getAccessType());
-					sm.accessToDataDisk(diskIds[i], dirtyEntry, diskAccessTime + spinDelay, dirtyEntry.getAccessType());
-				}
-			}
-			cacheDisk.clearRemovedList();
-		}
-
-		return result;
+		return responseTime;
 	}
 
 	private List<DataEntry> getDirtyDataList(int diskId, double arrivalTime) {
@@ -312,14 +321,14 @@ public class MAIDLayoutManager extends LayoutManager {
 	}
 
 	public Object writeToSource(DataEntry entry, double arrivalTime) {
-		double responseTime = -1.0;
+		double responseTime = 0.0;
 
-		responseTime = writeToCacheDisk(entry, arrivalTime, true);
+		double cdResponseTime = writeToCacheDisk(entry, arrivalTime, true);
 
 		// write throghでデータディスクへも書き込む
 		double ddResponse = writeToDataDisk(entry, arrivalTime);
 
-		responseTime = responseTime >= ddResponse ? responseTime : ddResponse;
+		responseTime = cdResponseTime >= ddResponse ? cdResponseTime : ddResponse;
 
 		entry.setResponseTime(responseTime);
 
@@ -327,14 +336,13 @@ public class MAIDLayoutManager extends LayoutManager {
 	}
 
 	public double writeToDataDisk(DataEntry entry, double arrivalTime) {
-		double result = -1.0;
+		double responseTime = -1.0;
 
 		int pDiskId = this.layoutInfo.getDataDiskId(entry.getId());
 		int bDiskId = this.dataDiskList.get(pDiskId).getBackupDestinationId();
 
 		StorageManager sm = Environment.getStorageManager();
 
-		//TODO have to add the spinning check code.
 		double pDelay = 0.0;
 		if (!sm.isSpinning(pDiskId, arrivalTime)) {
 			pDelay = sm.spinUp(pDiskId, arrivalTime);
@@ -345,11 +353,16 @@ public class MAIDLayoutManager extends LayoutManager {
 		}
 
 
-		double pResponse = sm.accessToDataDisk(pDiskId, entry, arrivalTime + pDelay, entry.getAccessType());
-		double bResponse = sm.accessToDataDisk(bDiskId, entry, arrivalTime + bDelay, entry.getAccessType());
+		double pResponse = sm.accessToDataDisk(pDiskId, entry, arrivalTime + pDelay, entry.getAccessType()) + pDelay;
+		double bResponse = sm.accessToDataDisk(bDiskId, entry, arrivalTime + bDelay, entry.getAccessType()) + bDelay;
 
-		result = pResponse >= bResponse ? pResponse : bResponse;
-		return result;
+		responseTime = pResponse >= bResponse ? pResponse : bResponse;
+
+		Statistics stats = Environment.getStats();
+		stats.incrementWriteCounter(Statistics.WRITE_COUNTER_TYPE.DATA_DISK);
+		stats.addingResponseTime(Statistics.RESPONSE_TYPE.DATA_DISK, responseTime);
+
+		return responseTime;
 	}
 
 	@Override
