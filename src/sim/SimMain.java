@@ -7,6 +7,7 @@ import sim.datalayout.LayoutManager;
 import sim.datalayout.factory.LayoutManagerFactory;
 import sim.output.LogCollector;
 import sim.request.RequestManager;
+import sim.stat.NormalStats;
 import sim.stat.Statistics;
 import sim.stat.MAIDStats;
 import sim.stat.RAPoSDAStats;
@@ -97,7 +98,9 @@ public class SimMain {
 
 		// Creation Statistics Collector
 		Statistics stats = null;
-		if (layoutManager.getStorageType() == "MAID") {
+		if (layoutManager.getStorageType() == "Normal") {
+			stats = new NormalStats();
+		} else if (layoutManager.getStorageType() == "MAID") {
 			stats = new MAIDStats();
 		} else if (layoutManager.getStorageType() == "RAPoSDA") {
 			stats = new RAPoSDAStats();
