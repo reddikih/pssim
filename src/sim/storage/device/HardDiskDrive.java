@@ -57,9 +57,6 @@ public class HardDiskDrive implements CacheSource {
 			responseTime = readDisk(entry.getId(), entry.getSize(), arrivalTime);
 		}
 
-		// 状態時間の更新
-		updateAccessParameter(entry.getId(), entry.getSize(), arrivalTime, responseTime);
-
 		return responseTime;
 	}
 
@@ -79,9 +76,6 @@ public class HardDiskDrive implements CacheSource {
 			responseTime = writeDisk(data.getId(), data.getSize(), arrivalTime);
 		}
 
-		// 状態時間の更新
-		updateAccessParameter(data.getId(), data.getSize(), arrivalTime, responseTime);
-
 		return responseTime;
 	}
 
@@ -92,6 +86,9 @@ public class HardDiskDrive implements CacheSource {
 		double queueingTime = calculateQueueingTime(arrivalTime);
 		double responseTime = serviceTime + queueingTime;
 
+		// 状態時間の更新
+		updateAccessParameter(dataId, size, arrivalTime, responseTime);
+
 		return responseTime;
 	}
 
@@ -101,6 +98,9 @@ public class HardDiskDrive implements CacheSource {
 		double serviceTime = calculateServiceTime(size);
 		double queueingTime = calculateQueueingTime(arrivalTime);
 		double responseTime = serviceTime + queueingTime;
+
+		// 状態時間の更新
+		updateAccessParameter(dataId, size, arrivalTime, responseTime);
 
 		return responseTime;
 	}
