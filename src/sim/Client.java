@@ -32,15 +32,15 @@ public class Client {
 			// 応答時間のログ出力
 			// 初期データは通常のログとは異なります．
 			if (record.getDataType().equals(DataType.INITIAL)) {
-				// デバッグのために初期データはログ出力しない．
-				String logStr = LogCollector.createClientRequestRecord(
-						record.getRequestId(),
-						record.getDataId(),
-						record.getDataSize(),
-						record.getArrivalTime(),
-						record.getArrivalTime(), // 初期データは応答時間はゼロ
-						record.getRequestType());
-				LogCollector.outputRecord(logStr, LogCollector.OutputType.CLIENT_REQUEST);
+//				// デバッグのために初期データはログ出力しない．
+//				String logStr = LogCollector.createClientRequestRecord(
+//						record.getRequestId(),
+//						record.getDataId(),
+//						record.getDataSize(),
+//						record.getArrivalTime(),
+//						record.getArrivalTime(), // 初期データは応答時間はゼロ
+//						record.getRequestType());
+//				LogCollector.outputRecord(logStr, LogCollector.OutputType.CLIENT_REQUEST);
 			} else {
 				String logStr = LogCollector.createClientRequestRecord(
 						record.getRequestId(),
