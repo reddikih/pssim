@@ -122,7 +122,9 @@ public class MAIDCacheMemory implements Cache {
 			Map.Entry<Double, Long> lruEntry = usedKeys.pollFirstEntry();
 			if (lruEntry == null) return;
 			CacheEntry tempEntry = caches.remove(lruEntry.getValue());
-			usingSize -= tempEntry.getEntry().getSize();
+			if (tempEntry != null)
+				if (tempEntry.getEntry() != null)
+					usingSize -= tempEntry.getEntry().getSize();
 		}
 		addEntry(entry, arrivalTime);
 	}
