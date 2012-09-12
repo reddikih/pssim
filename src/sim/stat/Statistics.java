@@ -41,31 +41,34 @@ public abstract class Statistics {
 
 
 	public double calcMemoryCacheHit() {
-		return (double)memoryReadCount / totalReadCount;
+		return totalReadCount != 0 ? (double)memoryReadCount / totalReadCount : 0;
 	}
 
 	public double calcCacheDiskHit() {
-		return (double)cacheDiskReadCount / totalReadCount;
+		return totalReadCount != 0 ? (double)cacheDiskReadCount / totalReadCount : 0;
 	}
 
 	public double calcWriteBufferCacheHit() {
-		return (double)writeBufferReadCount / totalReadCount;
+		return totalReadCount != 0 ? (double)writeBufferReadCount / totalReadCount : 0;
 	}
 
 	public double calcReadAreaCacheHit() {
-		return (double)readAreaCacheReadCount / totalReadCount;
+		return totalReadCount != 0 ? (double)readAreaCacheReadCount / totalReadCount : 0;
 	}
 
 	protected double calcAverageMemoryResponseTime() {
-		return totalMemoryResponseTime / (memoryReadCount + memoryWriteCount);
+		long denominator = memoryReadCount + memoryWriteCount;
+		return denominator != 0 ? totalMemoryResponseTime / denominator : 0;
 	}
 
 	protected double calcAverageCacheDiskResponseTime() {
-		return totalCacheDiskResponseTime / (cacheDiskReadCount + cacheDiskWriteCount);
+		long denominator = cacheDiskReadCount + cacheDiskWriteCount;
+		return denominator != 0 ? totalCacheDiskResponseTime / denominator : 0;
 	}
 
 	protected double calcAverageDataDiskResponseTime() {
-		return totalDataDiskResponseTime / (dataDiskReadCount + dataDiskWriteCount);
+		long denominator = dataDiskReadCount + dataDiskWriteCount;
+		return denominator != 0 ? totalDataDiskResponseTime / denominator : 0;
 	}
 
 	public void incrementReadCounter(READ_COUNTER_TYPE type) {
