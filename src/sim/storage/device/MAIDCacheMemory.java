@@ -103,16 +103,6 @@ public class MAIDCacheMemory implements Cache {
 			// Write through なので追い出されたデータは無視しても問題無い
 			replaceEntry(entry, arrivalTime);
 		}
-//		if ((value = getEntry(entry.getId(), arrivalTime)) != null) {
-//			((DataEntry)value).setResponseTime(cacheResposneTime);
-//		} else {
-//			value = source.writeToSource(entry, arrivalTime);
-//			if ((usingSize + entry.getSize()) <= maxCacheSize) {
-//				addEntry(entry, arrivalTime);
-//			} else {
-//				replaceEntry(entry, arrivalTime);
-//			}
-//		}
 
 		return value;
 	}

@@ -137,6 +137,7 @@ public class CacheMemory {
 	private void replaceEntry(DataEntry entry, double arrivalTime) {
 		while (readArea < (usageReadArea + entry.getSize())) {
 			Map.Entry<Double, Long> lruEntry = usedKeys.pollFirstEntry();
+			if (lruEntry == null) return;
 			DataEntry tempEntry = readCaches.remove(lruEntry.getValue());
 			usageReadArea -= tempEntry.getSize();
 		}
