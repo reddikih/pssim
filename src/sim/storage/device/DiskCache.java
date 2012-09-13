@@ -77,8 +77,10 @@ public class DiskCache implements Cache {
 	private void replaceEntry(DataEntry data, double arrivalTime) {
 		while (usedSize + data.getSize() > maxCacheSize) {
 			Map.Entry<Double, Long> lruEntry = usedKeys.pollFirstEntry();
+			if (lruEntry == null) return;
 			CacheEntry tempEntry = caches.remove(lruEntry.getValue());
-			usedSize -= tempEntry.getEntry().getSize();
+			if (tempEntry != null && tempEntry.getEntry() != null)
+				usedSize -= tempEntry.getEntry().getSize();
 		}
 		addEntry(data, arrivalTime);
 	}
