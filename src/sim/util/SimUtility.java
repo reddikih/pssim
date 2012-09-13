@@ -105,10 +105,9 @@ public class SimUtility {
 					} else {
 						throw new Exception("Data type of workload record is invalid. line number : [" + lineNum + "]");
 					}
-//					DataType dataType =
-//						DataType.I.name().equals(tokens[5]) ? DataType.I : DataType.N;
 
-					WorkloadRecord record = new WorkloadRecord(requestId, dataId, arrivalTime, dataSize, requestType, dataType);
+					WorkloadRecord record = new WorkloadRecord(requestId, dataId,
+							arrivalTime, dataSize, requestType, dataType);
 					workloads.add(record);
 					lineNum++;
 				}

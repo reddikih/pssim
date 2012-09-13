@@ -72,8 +72,8 @@ public class LogCollector {
 			}
 
 			try {
-//				LogCollector.writers.put(type, new PrintWriter(fileName));
-				LogCollector.writers.put(type, new PrintWriter(new BufferedWriter(new FileWriter(fileName), BUFFER_SIZE)));
+				LogCollector.writers.put(type, new PrintWriter(
+						new BufferedWriter(new FileWriter(fileName), BUFFER_SIZE)));
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 				System.exit(0);
@@ -107,7 +107,8 @@ public class LogCollector {
 		}
 	}
 
-	public static String createDataDiskStateRecord(int id, long dataId, int size, DiskState state, double start, double end, double energy, AccessType atype) {
+	public static String createDataDiskStateRecord(int id, long dataId, int size,
+			DiskState state, double start, double end, double energy, AccessType atype) {
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("DD,");
@@ -123,7 +124,8 @@ public class LogCollector {
 		return builder.toString();
 	}
 
-	public static String createCacheDiskStateRecord(int id, long dataId, int size, DiskState state, double start, double end, double energy, AccessType atype) {
+	public static String createCacheDiskStateRecord(int id, long dataId, int size,
+			DiskState state, double start, double end, double energy, AccessType atype) {
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("CD,");
@@ -139,7 +141,8 @@ public class LogCollector {
 		return builder.toString();
 	}
 
-	public static String createClientRequestRecord(long requestId, long dataId, int dataSize, double arrivalTime, double responseTime, AccessType atype) {
+	public static String createClientRequestRecord(long requestId, long dataId,
+			int dataSize, double arrivalTime, double responseTime, AccessType atype) {
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("CR,");
@@ -153,7 +156,8 @@ public class LogCollector {
 		return builder.toString();
 	}
 
-	public static String createCacheMemoryHitRatioRecord(long dataId, int memoryId, double accessTime, ReplicaType type, boolean result) {
+	public static String createCacheMemoryHitRatioRecord(long dataId, int memoryId,
+			double accessTime, ReplicaType type, boolean result) {
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("HCM,");
@@ -167,7 +171,8 @@ public class LogCollector {
 		return builder.toString();
 	}
 
-	public static String createCacheDiskHitRatioRecord(long dataId, int diskId, double accessTime, boolean result) {
+	public static String createCacheDiskHitRatioRecord(long dataId, int diskId,
+			double accessTime, boolean result) {
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("HCD,");
@@ -179,7 +184,8 @@ public class LogCollector {
 		return builder.toString();
 	}
 
-	public static String createBufferWritableRatioRecord(long dataId, int memoryId, double accessTime, ReplicaType type, boolean result) {
+	public static String createBufferWritableRatioRecord(long dataId, int memoryId,
+			double accessTime, ReplicaType type, boolean result) {
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("BW,");
@@ -192,7 +198,8 @@ public class LogCollector {
 		return builder.toString();
 	}
 
-	public static String createDiskRotationRatioRecord(long dataId, int diskId, double accessTime, ReplicaType type, boolean result) {
+	public static String createDiskRotationRatioRecord(long dataId, int diskId,
+			double accessTime, ReplicaType type, boolean result) {
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("DRR,");
