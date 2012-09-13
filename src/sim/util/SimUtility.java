@@ -53,13 +53,7 @@ public class SimUtility {
 		return result;
 	}
 
-//	public static void main(String[] args) {
-//		String input = "1";
-//		Long result = SimUtility.parseSize(input);
-//	}
-
 	public static List<WorkloadRecord> getWorkloads(String workloadPath) throws Exception {
-//	public static List<WorkloadRecord> getWorkloads(URI workloadPath) {
 		List<WorkloadRecord> workloads = new ArrayList<WorkloadRecord>();
 
 		FileInputStream fis = null;
@@ -67,17 +61,15 @@ public class SimUtility {
 		BufferedReader br = null;
 
 		try {
-//			fis = new FileInputStream(workloadPath);
 			fis = new FileInputStream(new File(workloadPath));
 			isr = new InputStreamReader(fis, "ASCII");
-//			InputStream is = workloadPath.toURL().openStream();
-//			isr = new InputStreamReader(is, "ASCII");
 			br = new BufferedReader(isr);
 
 			String line;
 			int lineNum = 1;
 			while((line = br.readLine()) != null) {
 				if (!line.isEmpty()) {
+					if (line.startsWith("#")) continue;
 					String[] tokens = line.split(",");
 					long requestId = Long.parseLong(tokens[0]);
 					long dataId = Long.parseLong(tokens[1]);
@@ -93,8 +85,6 @@ public class SimUtility {
 					} else {
 						throw new Exception("Access type of workload record is invalid. line number : [" + lineNum + "]");
 					}
-//					AccessType requestType =
-//						AccessType.READ.name().equals(tokens[4]) ? AccessType.READ : AccessType.WRITE;
 
 					// add error check strictly
 					DataType dataType;
@@ -126,5 +116,4 @@ public class SimUtility {
 		}
 		return workloads;
 	}
-
 }
