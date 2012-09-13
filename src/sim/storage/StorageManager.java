@@ -57,12 +57,14 @@ public class StorageManager {
 		}
 
 		for (int i = 0; i < this.numberOfCacheDisk; i++) {
-			HardDiskDrive hdd = new HardDiskDrive(i, Environment.getDiskModel(), cacheDiskStateManager);
+			HardDiskDrive hdd = new HardDiskDrive(i, Environment.getDiskModel(),
+					cacheDiskStateManager, HardDiskDrive.DiskType.CACHE_DISK);
 			this.cacheDisks.add(hdd);
 		}
 
 		for (int i = 0; i < this.numberOfDataDisk; i++) {
-			HardDiskDrive hdd = new HardDiskDrive(i, Environment.getDiskModel(), dataDiskStateManager);
+			HardDiskDrive hdd = new HardDiskDrive(i, Environment.getDiskModel(),
+					dataDiskStateManager, HardDiskDrive.DiskType.DATA_DISK);
 			this.dataDisks.add(hdd);
 		}
 	}

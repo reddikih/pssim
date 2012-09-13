@@ -33,6 +33,8 @@ public class LogCollector {
 		DISK_ROTATION_RATIO,
 		DATA_DISK_MAP,
 		STATS,
+		DATA_DISK_PERF,
+		CACHE_DISK_PERF,
 	};
 
 	/**
@@ -90,7 +92,8 @@ public class LogCollector {
 		LogCollector.outputRecord("OUTPUT_TYPE, DATA_ID, MEMORY_ID, ACCESS_TIME, REPLICA_TYPE, RESULT", OutputType.BUFFER_WRITABLE_RATIO);
 		LogCollector.outputRecord("OUTPUT_TYPE, DATA_ID, DISK_ID, ACCESS_TIME, REPLICA_TYPE, RESULT", OutputType.DISK_ROTATION_RATIO);
 		LogCollector.outputRecord("DATA_ID,DISK_ID", OutputType.DATA_DISK_MAP);
-
+		LogCollector.outputRecord("DISK_ID,DATA_ID,SIZE,ARRIVAL_TIME,RESPONSE_TIME, ACCESS_TYPE", OutputType.DATA_DISK_PERF);
+		LogCollector.outputRecord("DISK_ID,DATA_ID,SIZE,ARRIVAL_TIME,RESPONSE_TIME, ACCESS_TYPE", OutputType.CACHE_DISK_PERF);
 	}
 
 	public static void outputRecord(String record, OutputType type) {
@@ -208,6 +211,20 @@ public class LogCollector {
 
 		builder.append(dataId);builder.append(",");
 		builder.append(diskId);
+
+		return builder.toString();
+	}
+
+	public static String createDiskPerformanceRecord(int diskId, long dataId,
+			int size, double arrival, double response, AccessType type) {
+		StringBuilder builder = new StringBuilder();
+
+		builder.append(diskId);builder.append(",");
+		builder.append(dataId);builder.append(",");
+		builder.append(size);builder.append(",");
+		builder.append(String.format("%.5f", arrival));builder.append(",");
+		builder.append(String.format("%.5f", response));builder.append(",");
+		builder.append(type.toString());
 
 		return builder.toString();
 	}

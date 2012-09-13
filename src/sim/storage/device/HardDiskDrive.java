@@ -3,6 +3,7 @@ package sim.storage.device;
 import sim.SimParameter;
 import sim.datalayout.managed.DataEntry;
 import sim.output.LogCollector;
+import sim.output.LogCollector.OutputType;
 import sim.storage.cache.Cache;
 import sim.storage.cache.CacheSource;
 import sim.storage.device.model.DiskModel;
@@ -33,12 +34,20 @@ public class HardDiskDrive implements CacheSource {
 
 	private boolean useCache;
 
-	public HardDiskDrive(int id, DiskModel model, DiskStateManager stateManager) {
+	private DiskType diskType;
+
+	public static enum DiskType {
+		CACHE_DISK,
+		DATA_DISK,
+	}
+
+	public HardDiskDrive(int id, DiskModel model, DiskStateManager stateManager, DiskType diskType) {
 		this.id = id;
 		this.model = model;
 		this.stateManager = stateManager;
 		this.diskCache = new DiskCache(this, model.getCacheSize());
 		this.useCache = SimParameter.isUseCache();
+		this.diskType = diskType;
 	}
 
 	/**
@@ -57,7 +66,21 @@ public class HardDiskDrive implements CacheSource {
 			responseTime = readDisk(entry.getId(), entry.getSize(), arrivalTime);
 		}
 
+		logPerformance(entry.getId(), entry.getSize(), arrivalTime,
+				responseTime, AccessType.READ);
+
 		return responseTime;
+	}
+
+	private void logPerformance(long dataId, int size, double arrival,
+			double response, AccessType type) {
+		String logStr = LogCollector.createDiskPerformanceRecord(
+				this.id, dataId, size, arrival, response, type);
+		if (this.diskType.equals(DiskType.CACHE_DISK)) {
+			LogCollector.outputRecord(logStr, OutputType.CACHE_DISK_PERF);
+		} else {
+			LogCollector.outputRecord(logStr, OutputType.DATA_DISK_PERF);
+		}
 	}
 
 	/**
@@ -75,6 +98,9 @@ public class HardDiskDrive implements CacheSource {
 		} else {
 			responseTime = writeDisk(data.getId(), data.getSize(), arrivalTime);
 		}
+
+		logPerformance(data.getId(), data.getSize(), arrivalTime,
+				responseTime, AccessType.WRITE);
 
 		return responseTime;
 	}
