@@ -197,6 +197,11 @@ public class StorageManager {
 		// SimTimeManagerの時間を更新する
 		Environment.getSimTimeManager().setDataDiskLastAccessTime(result + arrivalTime + delay);
 
+		// log the performance of data disk
+		String logStr = LogCollector.createDiskPerformanceRecord(diskId, data.getId(),
+				data.getSize(), arrivalTime, result + delay, type);
+		LogCollector.outputRecord(logStr, LogCollector.OutputType.DATA_DISK_PERF);
+
 		return result + delay;
 	}
 
@@ -220,6 +225,11 @@ public class StorageManager {
 
 		// SimTimeManagerの時間を更新する
 		Environment.getSimTimeManager().setDataDiskLastAccessTime(result + arrivalTime + delay);
+
+		// log the performance of data disk
+		String logStr = LogCollector.createDiskPerformanceRecord(diskId, data.getId(),
+				data.getSize(), arrivalTime, result + delay, type);
+		LogCollector.outputRecord(logStr, LogCollector.OutputType.DATA_DISK_PERF);
 
 		return result + delay;
 	}
@@ -255,6 +265,11 @@ public class StorageManager {
 
 		// SimTimeManagerの時間を更新する
 		Environment.getSimTimeManager().setCacheDiskLastAccessTime(responseTime + arrivalTime);
+
+		// log the performance of data disk
+		String logStr = LogCollector.createDiskPerformanceRecord(diskId, data.getId(),
+				data.getSize(), arrivalTime, responseTime, type);
+		LogCollector.outputRecord(logStr, LogCollector.OutputType.CACHE_DISK_PERF);
 
 		return responseTime;
 	}

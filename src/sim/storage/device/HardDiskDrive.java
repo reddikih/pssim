@@ -66,8 +66,8 @@ public class HardDiskDrive implements CacheSource {
 			responseTime = readDisk(entry.getId(), entry.getSize(), arrivalTime);
 		}
 
-		logPerformance(entry.getId(), entry.getSize(), arrivalTime,
-				responseTime, AccessType.READ);
+//		logPerformance(entry.getId(), entry.getSize(), arrivalTime,
+//				responseTime, AccessType.READ);
 
 		return responseTime;
 	}
@@ -99,8 +99,8 @@ public class HardDiskDrive implements CacheSource {
 			responseTime = writeDisk(data.getId(), data.getSize(), arrivalTime);
 		}
 
-		logPerformance(data.getId(), data.getSize(), arrivalTime,
-				responseTime, AccessType.WRITE);
+//		logPerformance(data.getId(), data.getSize(), arrivalTime,
+//				responseTime, AccessType.WRITE);
 
 		return responseTime;
 	}
