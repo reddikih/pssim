@@ -343,15 +343,19 @@ public class MAIDLayoutManager extends LayoutManager {
 
 		StorageManager sm = Environment.getStorageManager();
 
+		boolean isSpinning;
 		double pDelay = 0.0;
-		if (!sm.isSpinning(pDiskId, arrivalTime)) {
-			pDelay = sm.spinUp(pDiskId, arrivalTime);
-		}
 		double bDelay = 0.0;
-		if (!sm.isSpinning(bDiskId, arrivalTime)) {
-			bDelay = sm.spinUp(bDiskId, arrivalTime);
-		}
 
+		isSpinning = sm.isSpinning(pDiskId, arrivalTime);
+		if (!isSpinning) pDelay = sm.spinUp(pDiskId, arrivalTime);
+		loggingDiskRotationRatio(
+				pDiskId, entry, arrivalTime, isSpinning, ReplicaType.PRIMARY);
+
+		isSpinning = sm.isSpinning(bDiskId, arrivalTime);
+		if (!isSpinning) bDelay = sm.spinUp(bDiskId, arrivalTime);
+		loggingDiskRotationRatio(
+				bDiskId, entry, arrivalTime, isSpinning, ReplicaType.BACKUP);
 
 		double pResponse = sm.accessToDataDisk(pDiskId, entry, arrivalTime + pDelay, entry.getAccessType()) + pDelay;
 		double bResponse = sm.accessToDataDisk(bDiskId, entry, arrivalTime + bDelay, entry.getAccessType()) + bDelay;
@@ -363,6 +367,14 @@ public class MAIDLayoutManager extends LayoutManager {
 		stats.addingResponseTime(Statistics.RESPONSE_TYPE.DATA_DISK, responseTime);
 
 		return responseTime;
+	}
+
+	private void loggingDiskRotationRatio(int diskId, DataEntry entry,
+			double arrivalTime, boolean isSpinning, ReplicaType type) {
+
+		String logStr = LogCollector.createDiskRotationRatioRecord(
+				entry.getId(), diskId, arrivalTime, type, isSpinning);
+		LogCollector.outputRecord(logStr, LogCollector.OutputType.DISK_ROTATION_RATIO);
 	}
 
 	@Override

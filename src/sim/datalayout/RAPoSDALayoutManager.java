@@ -424,6 +424,7 @@ public class RAPoSDALayoutManager extends LayoutManager {
 		boolean shouldDiskAccess = true;
 		double delay = 0;
 
+		int targetDiskId = -1;
 		boolean canWrite = cacheMemory.writeCacheData(entry, type);
 		if (canWrite) {
 			boolean isUnderThreshold = cacheMemory.isUnderThreshold(type); // Cacheに書き込めて，かつ閾値を超えていない
@@ -446,29 +447,28 @@ public class RAPoSDALayoutManager extends LayoutManager {
 				LogCollector.outputRecord(logStr, OutputType.BUFFER_WRITABLE_RATIO);
 			}
 		} else {
-			// 対象ディスクをスピンアップ
-			int diskId;
 			if (type.equals(ReplicaType.PRIMARY)) {
-				diskId = layoutInfo.getDataDiskId(entry.getId());
+				targetDiskId = layoutInfo.getDataDiskId(entry.getId());
 			} else {
 				int pDiskId = layoutInfo.getDataDiskId(entry.getId());
 				DataDisk dataDisk = this.dataDiskList.get(pDiskId);
-				diskId = dataDisk.getBackupDestinationId();
+				targetDiskId = dataDisk.getBackupDestinationId();
 			}
 
 			StorageManager sm = Environment.getStorageManager();
-			if (!sm.isSpinning(diskId, arrivalTime)) {
-				delay = sm.spinUp(diskId, arrivalTime);
-				arrivalTime += delay;
 
-				// ディスク停止中アクセスのログ出力
-				// ディスクアクセス時の回転確率に本質的には関係しないからこのログも出力しないことにする．
-//				String logStr = LogCollector.createDiskRotationRatioRecord(entry.getId(), diskId, arrivalTime, type, false);
-//				LogCollector.outputRecord(logStr, OutputType.DISK_ROTATION_RATIO);
+			// 対象ディスクをスピンアップ
+			boolean isSpinning = sm.isSpinning(targetDiskId, arrivalTime);
+			if (!isSpinning) {
+				delay = sm.spinUp(targetDiskId, arrivalTime);
+				arrivalTime += delay;
 			}
+			String logStr = LogCollector.createDiskRotationRatioRecord(
+					entry.getId(), targetDiskId, arrivalTime, type, isSpinning);
+			LogCollector.outputRecord(logStr, OutputType.DISK_ROTATION_RATIO);
 
 			// バッファ書き込み可能率のログ出力(overflow)
-			String logStr = LogCollector.createBufferWritableRatioRecord(entry.getId(), cacheMemoryId, arrivalTime, type, false);
+			logStr = LogCollector.createBufferWritableRatioRecord(entry.getId(), cacheMemoryId, arrivalTime, type, false);
 			LogCollector.outputRecord(logStr, OutputType.BUFFER_WRITABLE_RATIO);
 		}
 
@@ -485,7 +485,7 @@ public class RAPoSDALayoutManager extends LayoutManager {
 			entries.addAll(repEntries);
 			entries.add(entry);
 
-			responseTime = writeToDisk(entries.toArray(new DataEntry[0]), arrivalTime, type) + delay;
+			responseTime = writeToDataDisk(entries.toArray(new DataEntry[0]), arrivalTime, type, targetDiskId) + delay;
 
 			// 取りだしたキャッシュラインのデータはキャッシュメモリから削除する
 			removeCacheLine(mainEntries, cacheMemory, type);
@@ -569,7 +569,8 @@ public class RAPoSDALayoutManager extends LayoutManager {
 		}
 	}
 
-	private double writeToDisk(DataEntry[] entries, double arrivalTime, ReplicaType type) {
+	private double writeToDataDisk(DataEntry[] entries, double arrivalTime,
+			ReplicaType type, int ignoreDiskId) {
 		double responseTime = -1.0;
 
 		StorageManager sm = Environment.getStorageManager();
@@ -595,8 +596,10 @@ public class RAPoSDALayoutManager extends LayoutManager {
 						cacheMem.writeToReadArea(entry, arrivalTime);
 
 					// ディスク回転中アクセスのログ出力
-					String logStr = LogCollector.createDiskRotationRatioRecord(entry.getId(), diskId, arrivalTime, type, true);
-					LogCollector.outputRecord(logStr, LogCollector.OutputType.DISK_ROTATION_RATIO);
+					if (diskId != ignoreDiskId) {
+						String logStr = LogCollector.createDiskRotationRatioRecord(entry.getId(), diskId, arrivalTime, type, true);
+						LogCollector.outputRecord(logStr, LogCollector.OutputType.DISK_ROTATION_RATIO);
+					}
 				} else {
 					// ディスク停止中アクセスのログ出力
 					// ここは停止中でもスピンアップには関係ないので，ディスクアクセスログには出さない
