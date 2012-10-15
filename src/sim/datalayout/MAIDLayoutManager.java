@@ -136,7 +136,7 @@ public class MAIDLayoutManager extends LayoutManager {
 			double tempTime = readFromDataDisk(entry, arrivalTime);
 
 			// 読み出したデータはキャッシュディスクへコピーを書き込む
-			responseTime = writeToCacheDisk(entry, arrivalTime + tempTime, false);
+			responseTime = writeToCacheDisk(entry, arrivalTime + tempTime, false, AccessType.BG_WRITE);
 		}
 		entry.setResponseTime(responseTime);
 
@@ -205,7 +205,8 @@ public class MAIDLayoutManager extends LayoutManager {
 		return responseTime;
 	}
 
-	private double writeToCacheDisk(DataEntry entry, double accessTime, boolean dirtyFlag) {
+	private double writeToCacheDisk(DataEntry entry, double accessTime,
+			boolean dirtyFlag, AccessType accessType ) {
 		double responseTime = 0.0;
 		// 対象CacheDiskのdisk IDを決定する
 		decideDestinationCacheDisk(entry);
@@ -217,7 +218,7 @@ public class MAIDLayoutManager extends LayoutManager {
 
 		// CacheDiskへの書き込み処理の応答時間を返す
 		StorageManager sm = Environment.getStorageManager();
-		responseTime = sm.accessToCacheDisk(cacheDiskId, entry, accessTime, AccessType.WRITE);
+		responseTime = sm.accessToCacheDisk(cacheDiskId, entry, accessTime, accessType);
 
 		MAIDStats stats = (MAIDStats)Environment.getStats();
 		stats.incrementWriteCounter(Statistics.WRITE_COUNTER_TYPE.CACHE_DISK);

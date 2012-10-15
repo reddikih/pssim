@@ -354,7 +354,7 @@ public class RAPoSDALayoutManager extends LayoutManager {
 		}
 
 		// 読み出したデータはキャッシュディスクへ書き込む
-		writeToCacheDisk(entry, arrivalTime + result);
+		writeToCacheDisk(entry, arrivalTime + result, AccessType.BG_WRITE);
 
 		// 更にキャッシュメモリのread用領域にもコピーする．
 		// Primary と Backup それぞれのキャッシュメモリにコピーする．
@@ -585,7 +585,7 @@ public class RAPoSDALayoutManager extends LayoutManager {
 					stats.incrementWriteCounter(WRITE_COUNTER_TYPE.DATA_DISK);
 					stats.addingResponseTime(RESPONSE_TYPE.DATA_DISK, responseTime);
 
-					writeToCacheDisk(entry, arrivalTime + responseTime);
+					writeToCacheDisk(entry, arrivalTime + responseTime, AccessType.BG_WRITE);
 
 					// キャッシュメモリのread用領域にもコピーする
 					int cacheMemId = getCacheMemoryId(entry.getId(), ReplicaType.PRIMARY);
@@ -619,7 +619,7 @@ public class RAPoSDALayoutManager extends LayoutManager {
 					stats.incrementWriteCounter(WRITE_COUNTER_TYPE.DATA_DISK);
 					stats.addingResponseTime(RESPONSE_TYPE.DATA_DISK, responseTime);
 
-					writeToCacheDisk(entry, arrivalTime + responseTime);
+					writeToCacheDisk(entry, arrivalTime + responseTime, AccessType.BG_WRITE);
 
 					// キャッシュメモリのread用領域にもコピーする
 					int cacheMemId = getCacheMemoryId(entry.getId(), ReplicaType.BACKUP);
@@ -644,7 +644,8 @@ public class RAPoSDALayoutManager extends LayoutManager {
 		return responseTime;
 	}
 
-	private double writeToCacheDisk(DataEntry entry, double accessTime) {
+	private double writeToCacheDisk(
+			DataEntry entry, double accessTime, AccessType accessType) {
 		double responseTime = -1.0;
 		// 対象CacheDiskのdisk IDを決定する
 		decideDestinationCacheDisk(entry);
@@ -656,7 +657,7 @@ public class RAPoSDALayoutManager extends LayoutManager {
 
 		// CacheDiskへの書き込み処理の応答時間を返す
 		StorageManager sm = Environment.getStorageManager();
-		responseTime = sm.accessToCacheDisk(cacheDiskId, entry, accessTime, AccessType.WRITE);
+		responseTime = sm.accessToCacheDisk(cacheDiskId, entry, accessTime, accessType);
 
 		Statistics stats = Environment.getStats();
 		stats.incrementWriteCounter(WRITE_COUNTER_TYPE.CACHE_DISK);

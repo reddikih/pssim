@@ -5,4 +5,5 @@ public enum AccessType {
 	WRITE,
 	SPINUP,
 	POSTPROCESS,
+	BG_WRITE,
 }

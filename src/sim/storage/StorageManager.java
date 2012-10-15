@@ -259,14 +259,14 @@ public class StorageManager {
 
 		if (type.equals(AccessType.READ)) {
 			responseTime = cacheDisk.read(data, arrivalTime + delay) + delay;
-		} else if (type.equals(AccessType.WRITE)) {
+		} else if (type.equals(AccessType.WRITE ) || type.equals(AccessType.BG_WRITE)) {
 			responseTime = cacheDisk.write(data, arrivalTime + delay) + delay;
 		}
 
 		// SimTimeManagerの時間を更新する
 		Environment.getSimTimeManager().setCacheDiskLastAccessTime(responseTime + arrivalTime);
 
-		// log the performance of data disk
+		// log the performance of cache disk
 		String logStr = LogCollector.createDiskPerformanceRecord(diskId, data.getId(),
 				data.getSize(), arrivalTime, responseTime, type);
 		LogCollector.outputRecord(logStr, LogCollector.OutputType.CACHE_DISK_PERF);
