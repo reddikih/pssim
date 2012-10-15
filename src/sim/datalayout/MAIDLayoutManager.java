@@ -324,9 +324,9 @@ public class MAIDLayoutManager extends LayoutManager {
 	public Object writeToSource(DataEntry entry, double arrivalTime) {
 		double responseTime = 0.0;
 
-		double cdResponseTime = writeToCacheDisk(entry, arrivalTime, true);
+		double cdResponseTime = writeToCacheDisk(entry, arrivalTime, true, AccessType.WRITE);
 
-		// write throghでデータディスクへも書き込む
+		// write throughでデータディスクへも書き込む
 		double ddResponse = writeToDataDisk(entry, arrivalTime);
 
 		responseTime = cdResponseTime >= ddResponse ? cdResponseTime : ddResponse;
