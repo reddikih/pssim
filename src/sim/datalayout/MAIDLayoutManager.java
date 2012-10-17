@@ -329,7 +329,7 @@ public class MAIDLayoutManager extends LayoutManager {
 		// write throughでデータディスクへも書き込む
 		double ddResponse = writeToDataDisk(entry, arrivalTime);
 
-		responseTime = cdResponseTime >= ddResponse ? cdResponseTime : ddResponse;
+		responseTime = ddResponse;
 
 		entry.setResponseTime(responseTime);
 
