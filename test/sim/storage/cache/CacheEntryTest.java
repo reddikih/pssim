@@ -1,5 +1,7 @@
 package sim.storage.cache;
 
+import org.junit.Test;
+
 import sim.datalayout.managed.DataEntry;
 import sim.storage.cache.CacheEntry;
 import sim.util.DataType;
@@ -7,6 +9,7 @@ import junit.framework.TestCase;
 
 public class CacheEntryTest extends TestCase {
 
+	@Test
 	public void testHashCode() {
 		CacheEntry data1 = new CacheEntry(new DataEntry(1, 1, DataType.NORMAL), 0.1);
 		CacheEntry data2 = new CacheEntry(new DataEntry(2, 2, DataType.NORMAL), 0.2);
@@ -26,6 +29,7 @@ public class CacheEntryTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testEqualsObject() {
 		CacheEntry data1 = new CacheEntry(new DataEntry(1, 1, DataType.NORMAL), 0.1);
 		CacheEntry data2 = new CacheEntry(new DataEntry(2, 2, DataType.NORMAL), 0.2);

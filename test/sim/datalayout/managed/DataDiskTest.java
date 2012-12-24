@@ -1,11 +1,12 @@
 package sim.datalayout.managed;
 
-import sim.datalayout.managed.DataDisk;
-import sim.storage.device.model.DiskModel;
+import org.junit.Test;
+
 import junit.framework.TestCase;
 
 public class DataDiskTest extends TestCase {
 
+	@Test
 	public void testConstruction() {
 //		DiskModel model = new DiskModel("src/sim/resources/dataDiskModel.xml");
 //		long capacity = model.getCapacity() * 1024 * 1024 * 1024; // GBに換算

@@ -1,5 +1,7 @@
 package sim.storage.device;
 
+import org.junit.Test;
+
 import sim.datalayout.MAIDLayoutManager;
 import sim.datalayout.managed.DataEntry;
 import sim.storage.cache.CacheSource;
@@ -16,6 +18,7 @@ public class MAIDCacheMemoryTest extends TestCase {
 		this.maidCache = new MAIDCacheMemory(source, capacity, divid);
 	}
 
+	@Test
 	public void testConstruct() {
 		long capacity = 5;
 		init(5, 0);
@@ -24,6 +27,7 @@ public class MAIDCacheMemoryTest extends TestCase {
 		assertEquals(0, maidCache.getUsingSize());
 	}
 
+	@Test
 	public void testReadAndWrite() {
 //		DataEntry data1 = new DataEntry(1, 1, DataType.N);
 //		DataEntry data2 = new DataEntry(2, 1, DataType.N);

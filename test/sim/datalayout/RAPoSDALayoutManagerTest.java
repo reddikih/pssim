@@ -1,5 +1,8 @@
 package sim.datalayout;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import junit.framework.TestCase;
 import sim.Environment;
 import sim.SimParameter;
@@ -17,7 +20,7 @@ public class RAPoSDALayoutManagerTest extends TestCase {
 
 	private LayoutManager layoutManager = null;
 
-	@Override
+	@Before
 	protected void setUp() throws Exception {
 		/*
 		 * Cachememoryのスペック
@@ -59,6 +62,7 @@ public class RAPoSDALayoutManagerTest extends TestCase {
 		writeInitialData();
 	}
 
+	@Test
 	private void writeInitialData() {
 		RAPoSDALayoutManager myLayoutManager = (RAPoSDALayoutManager)this.layoutManager;
 
@@ -76,6 +80,7 @@ public class RAPoSDALayoutManagerTest extends TestCase {
 	}
 
 
+	@Test
 	public void testConstraction() {
 		SimParameter.init("./test/sim/datalayout/DMTestSimulator.xml");
 
@@ -99,18 +104,21 @@ public class RAPoSDALayoutManagerTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testInit() {
 		RAPoSDALayoutManager myLayoutManager = (RAPoSDALayoutManager)this.layoutManager;
 		myLayoutManager.init();
 		myLayoutManager.debugCreateManagedDevices();
 	}
 
+	@Test
 	public void testDeviceMapping() {
 		RAPoSDALayoutManager myLayoutManager = (RAPoSDALayoutManager)this.layoutManager;
 		myLayoutManager.init();
 		myLayoutManager.debugDeviceMapping();
 	}
 
+	@Test
 	public void testReadProcess() {
 		RAPoSDALayoutManager myLayoutManager = (RAPoSDALayoutManager)this.layoutManager;
 

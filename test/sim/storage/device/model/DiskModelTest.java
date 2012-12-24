@@ -2,6 +2,9 @@ package sim.storage.device.model;
 
 import java.lang.reflect.Method;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import sim.storage.device.model.DiskModel;
 import junit.framework.TestCase;
 
@@ -15,11 +18,13 @@ public class DiskModelTest extends TestCase {
 
 	DiskModel model;
 
+	@Before
 	public void setUp() {
 		model = new DiskModel("./test/sim/storage/device/model/testDiskModel.xml");
 	}
 
 
+	@Test
 	public void testCacheSize() {
 		int cacheSize = model.getCacheSize();
 		assertTrue(cacheSize > (32*1024)); // more than 32KB
@@ -67,6 +72,7 @@ public class DiskModelTest extends TestCase {
 //		}
 //	}
 
+	@Test
 	public void testGetCapacity() {
 //		DiskModel model = new DiskModel("src/test/sim/storage/device/model/testDiskModel.xml");
 //		// testDiskModel.xml ではcapacityの値を18GBにしているものとする．

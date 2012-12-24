@@ -2,6 +2,10 @@ package sim.datalayout.managed;
 
 import java.util.List;
 
+import org.junit.Test;
+import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
+
 import sim.datalayout.managed.CacheMemory;
 import sim.datalayout.managed.DataEntry;
 import sim.util.DataType;
@@ -14,6 +18,7 @@ public class CacheMemoryTest extends TestCase {
 	long capacity = 100;
 	long threshold = 40;
 
+	@Test
 	public void testCacheMemory() {
 		CacheMemory cache = new CacheMemory(this.id, this.threshold, this.capacity);
 		assertNotNull("CacheMemoryの生成に失敗しました．", cache);
@@ -21,6 +26,7 @@ public class CacheMemoryTest extends TestCase {
 		assertSame(this.id, cache.getId());
 	}
 
+	@Test
 	public void testConstructor() {
 		int id = 1;
 		long threshold = 10;
@@ -37,6 +43,7 @@ public class CacheMemoryTest extends TestCase {
 		assertEquals(5, cache.getReadArea());
 	}
 
+	@Test
 	public void testWriteCacheWithReadArea() {
 		int id = 1;
 		long threshold = 10;
@@ -76,6 +83,7 @@ public class CacheMemoryTest extends TestCase {
 		assertFalse(result);
 	}
 
+	@Test
 	public void testWriteToReadArea() {
 		int id = 1;
 		long threshold = 10;
@@ -136,6 +144,7 @@ public class CacheMemoryTest extends TestCase {
 		assertNotNull(result);
 	}
 
+	@Test
 	public void testWriteCacheData() {
 		CacheMemory cache = new CacheMemory(1, this.threshold, this.capacity);
 
@@ -172,6 +181,7 @@ public class CacheMemoryTest extends TestCase {
 	}
 
 
+	@Test
 	public void testReadCacheData() {
 		CacheMemory cache = new CacheMemory(1, this.threshold, this.capacity);
 
@@ -203,6 +213,7 @@ public class CacheMemoryTest extends TestCase {
 		assertNull("存在しないはずのバックアップキャッシュ（" + notExist + "）が読み出せてしまいました．", result);
 	}
 
+	@Test
 	public void testIsHit() {
 		CacheMemory cache = new CacheMemory(1, this.threshold, this.capacity);
 
@@ -234,6 +245,7 @@ public class CacheMemoryTest extends TestCase {
 		assertFalse("存在しないはずのバックアップキャッシュ（" + notExist + "）がヒットしてしまいました．", result);
 	}
 
+	@Test
 	public void testRemoveCacheData() {
 		CacheMemory cache = new CacheMemory(1, this.threshold, this.capacity);
 
@@ -265,6 +277,7 @@ public class CacheMemoryTest extends TestCase {
 
 	}
 
+	@Test
 	public void testIsUnderThreshold() {
 		CacheMemory cache = new CacheMemory(1, this.threshold, this.capacity);
 
@@ -301,14 +314,17 @@ public class CacheMemoryTest extends TestCase {
 		assertFalse("閾値処理が不正っぽいです．", result);
 	}
 
+	@Test
 	public void testGetCacheLines() {
-		CacheMemory cache = new CacheMemory(1, this.threshold, this.capacity);
+		long capacity = 10;
+		long threshold = 10;
+		CacheMemory cache = new CacheMemory(1, threshold, capacity);
 
-		DataEntry p1 = new DataEntry(100, 20, DataType.NORMAL);
-		DataEntry p2 = new DataEntry(101, 20, DataType.NORMAL);
+		DataEntry p1 = new DataEntry(100, 2, DataType.NORMAL);
+		DataEntry p2 = new DataEntry(101, 2, DataType.NORMAL);
 		DataEntry[] pArray = {p1, p2};
-		DataEntry b1 = new DataEntry(200, 20, DataType.NORMAL);
-		DataEntry b2 = new DataEntry(201, 20, DataType.NORMAL);
+		DataEntry b1 = new DataEntry(200, 2, DataType.NORMAL);
+		DataEntry b2 = new DataEntry(201, 2, DataType.NORMAL);
 		DataEntry[] bArray = {b1, b2};
 
 		cache.writeCacheData(p1, ReplicaType.PRIMARY);
@@ -318,16 +334,14 @@ public class CacheMemoryTest extends TestCase {
 
 		// Primaryデータの確認
 		List<DataEntry> entries = cache.getCacheLines(ReplicaType.PRIMARY);
-		for (int i = 0; i < entries.size(); i++) {
-			assertSame(entries.get(i).getId(), pArray[i].getId());
+		for (int i = 0; i < pArray.length; i++) {
+			assertThat(entries.contains(pArray[i]), is(true));
 		}
 
 		// Backupデータの確認
-		// TODO Map.values()で返されるCollection<V>はまMapへの挿入順を保持してはいない．
-		// 単純に配列と比較してもだめだから，本当はSortメソッドをどこかで実装しておいた方がよさそう．
 		entries = cache.getCacheLines(ReplicaType.BACKUP);
-		for (int i = 0; i < entries.size(); i++) {
-			assertSame(entries.get(i).getId(), bArray[i].getId());
+		for (int i = 0; i < bArray.length; i++) {
+			assertThat(entries.contains(bArray[i]), is(true));
 		}
 	}
 

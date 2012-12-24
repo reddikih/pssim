@@ -1,10 +1,7 @@
 package sim.datalayout.managed;
 
-import sim.Environment;
-import sim.datalayout.managed.CacheDisk;
-import sim.datalayout.managed.DataEntry;
-import sim.storage.device.model.DiskModel;
-import sim.util.DataType;
+import org.junit.Test;
+
 import junit.framework.TestCase;
 
 public class CacheDiskTest extends TestCase {
@@ -12,6 +9,7 @@ public class CacheDiskTest extends TestCase {
 //	DiskModel model = new DiskModel("src/test/sim/datalayout/managed/cacheDiskTestModel.xml");
 	// capacity = 5
 
+	@Test
 	public void testWriteEntry() {
 //		Environment.setCacheDiskModel(model);
 //		CacheDisk cDisk = new CacheDisk(1);
@@ -42,6 +40,7 @@ public class CacheDiskTest extends TestCase {
 
 	}
 
+	@Test
 	public void testReadEntry() {
 //		Environment.setCacheDiskModel(model);
 //		CacheDisk cDisk = new CacheDisk(1);

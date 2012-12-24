@@ -1,5 +1,7 @@
 package sim.storage.device;
 
+import org.junit.Test;
+
 import junit.framework.TestCase;
 import sim.Environment;
 import sim.datalayout.managed.DataEntry;
@@ -30,17 +32,19 @@ public class DiskCacheTest extends TestCase implements CacheSource {
 
 //		diskCache = new DiskCache(hdd, CACHE_SIZE);
 
-		MemoryModel mmodel = new MemoryModel("src/test/sim/storage/device/STTestMemoryModel.xml");
+		MemoryModel mmodel = new MemoryModel("test/sim/storage/device/STTestMemoryModel.xml");
 		Environment.setMemoryModel(mmodel);
 		diskCache = new DiskCache(this, CACHE_SIZE);
 	}
 
+	@Test
 	public void testDiskCacheCacheSourceInt() {
 		init();
 
 		assertNotNull("diskCache is null", diskCache);
 	}
 
+	@Test
 	public void testReadAndWrite() {
 		init();
 

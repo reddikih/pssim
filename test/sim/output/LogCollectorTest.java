@@ -1,5 +1,7 @@
 package sim.output;
 
+import org.junit.Test;
+
 import sim.output.LogCollector;
 import sim.util.AccessType;
 import sim.util.DiskState;
@@ -7,6 +9,7 @@ import junit.framework.TestCase;
 
 public class LogCollectorTest extends TestCase {
 
+	@Test
 	public void testOutputRecord() {
 		String outputStr = LogCollector.createDataDiskStateRecord(0, 0, 0, DiskState.ACTIVE, 10.0, 10.5, 30.0, AccessType.POSTPROCESS);
 		LogCollector.outputRecord(outputStr, LogCollector.OutputType.DATA_DISK);

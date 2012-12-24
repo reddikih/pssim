@@ -1,5 +1,7 @@
 package sim.storage.cache;
 
+import org.junit.Test;
+
 import sim.datalayout.managed.DataEntry;
 import sim.storage.cache.CacheSource;
 import sim.storage.cache.LRUCache;
@@ -14,6 +16,7 @@ public class LRUCacheTest extends TestCase implements CacheSource {
 		this.cache = new LRUCache(this, capacity);
 	}
 
+	@Test
 	public void testReadAndWrite() {
 		long capacity = 5;
 		long currentSize = 0;
@@ -36,6 +39,7 @@ public class LRUCacheTest extends TestCase implements CacheSource {
 		assertNull("read data is not correct.", this.cache.read(data3, 4));
 	}
 
+	@Test
 	public void testLRUStack() {
 		long capacity = 5;
 		long currentSize = 0;
